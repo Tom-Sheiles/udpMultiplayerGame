@@ -8,6 +8,7 @@ public class ClientSceneManager : MonoBehaviour
     Client client;
 
     [SerializeField] private InputField portInput;
+    [SerializeField] private InputField addressInput;
 
 
     private void Start()
@@ -18,6 +19,6 @@ public class ClientSceneManager : MonoBehaviour
     public void Connect()
     {
         client = new Client();
-        client.ConnectToServer(int.Parse(portInput.text));
+        client.ConnectToServer(int.Parse(portInput.text), addressInput.text);
     }
 }

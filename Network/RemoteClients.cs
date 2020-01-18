@@ -6,8 +6,8 @@ using System.Net.Sockets;
 
 public class RemoteClients {
 
-    int clientID;
-    private IPEndPoint clientEndPoint;
+    public int clientID;
+    public IPEndPoint clientEndPoint;
     
 
     public RemoteClients(int id)
@@ -19,4 +19,7 @@ public class RemoteClients {
     {
         this.clientEndPoint = endpoint;
     }
+
+    public int getID() { return this.clientID; }
+    public int getPort() { return this.clientEndPoint.Port; }
 }

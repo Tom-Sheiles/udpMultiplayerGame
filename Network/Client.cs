@@ -20,19 +20,26 @@ public class Client
     public Client()
     {
         this.commandDictionary = new CommandDictionary();
+
     }
 
 
     // Attempts to create a connection to the server with given host and port
-    public void ConnectToServer(int connectPort)
+    public void ConnectToServer(int connectPort, string hostName)
     {
 
         Thread serverResponseThread = new Thread(new ThreadStart(socketListen));
         serverResponseThread.Start();
 
-        string hostName = System.Net.Dns.GetHostName();
-        localClient.Connect(hostName, connectPort);
-
+        if (hostName == "") {
+            hostName = System.Net.Dns.GetHostName();
+            localClient.Connect(hostName, connectPort);
+        }
+        else
+        {
+            Debug.Log("HOSTNAME: " + hostName);
+            localClient.Connect(hostName, connectPort);
+        }
         
         Message messageObject = new Message(localClientID, 0);
         string connectRequest = messageObject.constructMessage();

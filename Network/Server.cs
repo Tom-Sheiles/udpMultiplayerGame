@@ -11,7 +11,7 @@ public class Server
 {
 
     private const int port = 3000;
-    private int connectedClients;
+    private int numberOfconnectedClients;
     private UdpClient udp;
 
     CommandDictionary commandDictionary;
@@ -21,7 +21,8 @@ public class Server
     {
         this.commandDictionary = new CommandDictionary();
         this.remoteClients = new List<RemoteClients>();
-        this.connectedClients = 0;
+        this.numberOfconnectedClients = 0;
+
     }
 
 
@@ -69,15 +70,15 @@ public class Server
     // Called when a client connect request is sent from a new client. assigns a new id and responds with the current game state
     private void assignClientID(IPEndPoint client)
     {
-        RemoteClients newRemoteClient = new RemoteClients(connectedClients);
-        ConnectMessage connectMessage = new ConnectMessage(-2, 2, connectedClients);
+        RemoteClients newRemoteClient = new RemoteClients(numberOfconnectedClients);
+        ConnectMessage connectMessage = new ConnectMessage(-2, 2, numberOfconnectedClients);
         newRemoteClient.setEndPoint(client);
 
         remoteClients.Add(newRemoteClient);
 
         sendToClient(client, connectMessage.constructMessage());
 
-        connectedClients++;
+        numberOfconnectedClients++;
 
     }
 
