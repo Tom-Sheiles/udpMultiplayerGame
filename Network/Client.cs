@@ -44,7 +44,22 @@ public class Client
         Message messageObject = new Message(localClientID, 0);
         string connectRequest = messageObject.constructMessage();
 
-        localClient.Send(Encoding.ASCII.GetBytes(connectRequest), connectRequest.Length);
+        //localClient.Send(Encoding.ASCII.GetBytes(connectRequest), connectRequest.Length);
+        sendToServer(connectRequest);
+    }
+
+
+    // Updates the location of position on the server and communicates it to all connected clients
+    public void sendPositionUpdate(Transform position)
+    {
+        PositionUpdateMessage positionUpdateMessage = new PositionUpdateMessage(localClientID, 4, position);
+        sendToServer(positionUpdateMessage.constructMessage());
+        
+    }
+
+    private void sendToServer(string message)
+    {
+        localClient.Send(Encoding.ASCII.GetBytes(message), message.Length);
     }
 
 
@@ -55,7 +70,7 @@ public class Client
         {
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 0);
             byte[] buffer = localClient.Receive(ref endPoint);
-            //Debug.Log("CLIENT ID: " + localClientID + ": " + Encoding.ASCII.GetString(buffer));
+            Debug.Log("CLIENT ID: " + localClientID + ": " + Encoding.ASCII.GetString(buffer));
 
             parseServerMessage(Encoding.ASCII.GetString(buffer));
 
@@ -67,14 +82,27 @@ public class Client
     private void parseServerMessage(string message)
     {
         Message messageObject = JsonUtility.FromJson<Message>(message);
-        
-        if(messageObject.message == 2)
-        {
-            connectionAccepted(message);
 
-        }else if(messageObject.message == 3)
+        /* if(messageObject.message == 2)
+         {
+             connectionAccepted(message);
+
+         }else if(messageObject.message == 3)
+         {
+             addNewClient(message);
+         }*/
+
+        switch (messageObject.message)
         {
-            addNewClient(message);
+            case 2:
+                connectionAccepted(message);
+                break;
+            case 3:
+                addNewClient(message);
+                break;
+            case 4:
+                setClientTransform(message);
+                break;
         }
     }
 
@@ -92,8 +120,15 @@ public class Client
     private void addNewClient(string message)
     {
         NewPlayerMessage newPlayerMessage = JsonUtility.FromJson<NewPlayerMessage>(message);
-        RemoteClients newClientObject = JsonUtility.FromJson<RemoteClients>(newPlayerMessage.clientString);
+        RemoteClients newClientObject = new RemoteClients(newPlayerMessage.clientID);
 
         remoteClients.Add(newClientObject);
+    }
+
+
+    private void setClientTransform(string message)
+    {
+        PositionUpdateMessage positionUpdateMessage = JsonUtility.FromJson<PositionUpdateMessage>(message);
+        Debug.Log("POS: " + positionUpdateMessage.transform.localPosition.x);
     }
 }

@@ -63,6 +63,10 @@ public class Server
         if(messageObject.message == 0 && messageObject.clientID == -1)
         {
             assignClientID(client);
+
+        }else if(messageObject.message == 4)
+        {
+            updatePosition(message);
         }
     }
 
@@ -80,7 +84,7 @@ public class Server
         // Send all existing players to the new player
         foreach(RemoteClients remote in remoteClients)
         {
-            NewPlayerMessage existingPlayerMessage = new NewPlayerMessage(-2, 3, JsonUtility.ToJson(remote));
+            NewPlayerMessage existingPlayerMessage = new NewPlayerMessage(-2, 3, remote.clientID);
             sendToClient(client, existingPlayerMessage.constructMessage());
         }
 
@@ -90,12 +94,26 @@ public class Server
         // Send the new client joined to all existing clients
         for (int i = 0; i < numberOfconnectedClients; i++)
         {
-            NewPlayerMessage newPlayerMessage = new NewPlayerMessage(-2, 3, JsonUtility.ToJson(newRemoteClient));
+            NewPlayerMessage newPlayerMessage = new NewPlayerMessage(-2, 3, numberOfconnectedClients);
             sendToClient(remoteClients[i].clientEndPoint, newPlayerMessage.constructMessage());
         }
 
         numberOfconnectedClients++;
 
+    }
+
+    
+    private void updatePosition(string message)
+    {
+        PositionUpdateMessage positionUpdate = JsonUtility.FromJson<PositionUpdateMessage>(message);
+        
+       foreach(RemoteClients remote in remoteClients)
+        {
+            if(remote.clientID != positionUpdate.clientID)
+            {
+                sendToClient(remote.clientEndPoint, positionUpdate.constructMessage());
+            }
+        }
     }
 
 

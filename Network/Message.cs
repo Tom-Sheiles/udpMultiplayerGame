@@ -35,12 +35,24 @@ public class ConnectMessage: Message
 
 public class NewPlayerMessage: Message
 {
-    public string clientString;
+    public int id;
 
-    public NewPlayerMessage(int clientID, int message, string client)
+    public NewPlayerMessage(int clientID, int message, int id)
     {
         this.clientID = clientID;
         this.message = message;
-        this.clientString = client;
+        this.id = id;
+    }
+}
+
+public class PositionUpdateMessage: Message
+{
+    public Transform transform;
+
+    public PositionUpdateMessage(int clientID, int message, Transform position)
+    {
+        this.clientID = clientID;
+        this.message = message;
+        this.transform = position;
     }
 }

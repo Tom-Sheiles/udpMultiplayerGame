@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class ClientSceneManager : MonoBehaviour
 {
     Client client;
+    public Transform transform;
 
     [SerializeField] private InputField portInput;
     [SerializeField] private InputField addressInput;
@@ -14,11 +15,17 @@ public class ClientSceneManager : MonoBehaviour
     private void Start()
     {
         portInput.text = "3000";
+
     }
 
     public void Connect()
     {
-        client = new Client();
+        this.client = new Client();
         client.ConnectToServer(int.Parse(portInput.text), addressInput.text);
+    }
+
+    public void UpdatePosition()
+    {
+        client.sendPositionUpdate(transform);
     }
 }
