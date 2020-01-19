@@ -13,13 +13,14 @@ public class Client
 
     UdpClient localClient = new UdpClient(0);
     CommandDictionary commandDictionary;
-    RemoteClients[] remoteClients;
+    List<RemoteClients> remoteClients;
 
     private int localClientID = -1;
 
     public Client()
     {
         this.commandDictionary = new CommandDictionary();
+        this.remoteClients = new List<RemoteClients>();
 
     }
 
@@ -37,7 +38,6 @@ public class Client
         }
         else
         {
-            Debug.Log("HOSTNAME: " + hostName);
             localClient.Connect(hostName, connectPort);
         }
         
@@ -55,7 +55,7 @@ public class Client
         {
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 0);
             byte[] buffer = localClient.Receive(ref endPoint);
-            Debug.Log("CLIENT: " + Encoding.ASCII.GetString(buffer));
+            //Debug.Log("CLIENT ID: " + localClientID + ": " + Encoding.ASCII.GetString(buffer));
 
             parseServerMessage(Encoding.ASCII.GetString(buffer));
 
@@ -71,6 +71,10 @@ public class Client
         if(messageObject.message == 2)
         {
             connectionAccepted(message);
+
+        }else if(messageObject.message == 3)
+        {
+            addNewClient(message);
         }
     }
 
@@ -81,5 +85,15 @@ public class Client
         ConnectMessage connectMessage = JsonUtility.FromJson<ConnectMessage>(message);
         localClientID = connectMessage.newLocalID;
 
+    }
+
+
+    // Adds all existing and new remote clients to the local client list of connected clients
+    private void addNewClient(string message)
+    {
+        NewPlayerMessage newPlayerMessage = JsonUtility.FromJson<NewPlayerMessage>(message);
+        RemoteClients newClientObject = JsonUtility.FromJson<RemoteClients>(newPlayerMessage.clientString);
+
+        remoteClients.Add(newClientObject);
     }
 }

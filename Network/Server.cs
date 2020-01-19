@@ -17,12 +17,12 @@ public class Server
     CommandDictionary commandDictionary;
     List<RemoteClients> remoteClients;
 
+
     public Server()
     {
         this.commandDictionary = new CommandDictionary();
         this.remoteClients = new List<RemoteClients>();
         this.numberOfconnectedClients = 0;
-
     }
 
 
@@ -74,9 +74,25 @@ public class Server
         ConnectMessage connectMessage = new ConnectMessage(-2, 2, numberOfconnectedClients);
         newRemoteClient.setEndPoint(client);
 
-        remoteClients.Add(newRemoteClient);
 
         sendToClient(client, connectMessage.constructMessage());
+
+        // Send all existing players to the new player
+        foreach(RemoteClients remote in remoteClients)
+        {
+            NewPlayerMessage existingPlayerMessage = new NewPlayerMessage(-2, 3, JsonUtility.ToJson(remote));
+            sendToClient(client, existingPlayerMessage.constructMessage());
+        }
+
+        remoteClients.Add(newRemoteClient);
+
+
+        // Send the new client joined to all existing clients
+        for (int i = 0; i < numberOfconnectedClients; i++)
+        {
+            NewPlayerMessage newPlayerMessage = new NewPlayerMessage(-2, 3, JsonUtility.ToJson(newRemoteClient));
+            sendToClient(remoteClients[i].clientEndPoint, newPlayerMessage.constructMessage());
+        }
 
         numberOfconnectedClients++;
 
@@ -95,7 +111,7 @@ public class Server
         //Debug.Log("Address: " + endpoint.Address);
         //Debug.Log("Address Family: " + endpoint.AddressFamily);
         //Debug.Log("Port: " + endpoint.Port);
-        Debug.Log("CONNECT INFO: " + endpoint.ToString());
+        //Debug.Log("CONNECT INFO: " + endpoint.ToString());
 
     }
 

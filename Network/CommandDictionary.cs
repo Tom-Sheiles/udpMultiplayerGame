@@ -8,6 +8,7 @@ public class CommandDictionary
     {
         {0, "ConnectRequest"},
         {1, "DisconnectRequest"},
-        {2, "ConnectionSuccessful"}
+        {2, "ConnectionSuccessful"},
+        {3, "NewPlayerData" }
     };
 }

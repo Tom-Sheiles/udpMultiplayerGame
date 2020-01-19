@@ -32,3 +32,15 @@ public class ConnectMessage: Message
         this.newLocalID = newID;
     }
 }
+
+public class NewPlayerMessage: Message
+{
+    public string clientString;
+
+    public NewPlayerMessage(int clientID, int message, string client)
+    {
+        this.clientID = clientID;
+        this.message = message;
+        this.clientString = client;
+    }
+}
