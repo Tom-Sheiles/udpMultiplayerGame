@@ -11,6 +11,8 @@ public class ClientSceneManager : MonoBehaviour
     [SerializeField] private InputField portInput;
     [SerializeField] private InputField addressInput;
 
+    private bool isActive = false;
+
 
     private void Start()
     {
@@ -21,11 +23,13 @@ public class ClientSceneManager : MonoBehaviour
     public void Connect()
     {
         this.client = new Client();
+        isActive = true;
         client.ConnectToServer(int.Parse(portInput.text), addressInput.text);
     }
 
     public void UpdatePosition()
     {
         client.sendPositionUpdate(transform);
+        client.executeCommands();
     }
 }

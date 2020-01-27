@@ -15,15 +15,16 @@ public class Client
     CommandDictionary commandDictionary;
     List<RemoteClients> remoteClients;
 
+    MainThreadQueue mainThreadQueue = new MainThreadQueue();
+
     private int localClientID = -1;
 
     public Client()
     {
         this.commandDictionary = new CommandDictionary();
         this.remoteClients = new List<RemoteClients>();
-
     }
-
+  
 
     // Attempts to create a connection to the server with given host and port
     public void ConnectToServer(int connectPort, string hostName)
@@ -46,6 +47,16 @@ public class Client
 
         //localClient.Send(Encoding.ASCII.GetBytes(connectRequest), connectRequest.Length);
         sendToServer(connectRequest);
+    }
+
+    public void executeCommands()
+    {
+        mainThreadQueue.Execute();
+
+        // ************* TODO: Refactor main thread queue to better fit in with the current architecture of the client and remote client code.
+        //                     This should include updating how the results are stored and making it a more streamlined process. Possibly adding the list of all clients to the main thread class
+        //                     as a dictionary and using the id as a key to perform the operations in O(1) time instead of adding the update messages to a stack of messages.
+        //                     This class can then directly read the position of each client from that list.
     }
 
 
@@ -82,15 +93,6 @@ public class Client
     private void parseServerMessage(string message)
     {
         Message messageObject = JsonUtility.FromJson<Message>(message);
-
-        /* if(messageObject.message == 2)
-         {
-             connectionAccepted(message);
-
-         }else if(messageObject.message == 3)
-         {
-             addNewClient(message);
-         }*/
 
         switch (messageObject.message)
         {
@@ -129,6 +131,10 @@ public class Client
     private void setClientTransform(string message)
     {
         PositionUpdateMessage positionUpdateMessage = JsonUtility.FromJson<PositionUpdateMessage>(message);
-        Debug.Log("POS: " + positionUpdateMessage.transform.localPosition.x);
+
+        Debug.Log(localClientID.ToString() +  message);
+
+        mainThreadQueue.SetPosition(positionUpdateMessage.transform, positionUpdateMessage.clientID);
+
     }
 }
