@@ -23,18 +23,6 @@ public class MainThreadQueue
         public CommandType Type;
     }
 
-    public class SetPositionResults
-    {
-        int id;
-        Transform position;
-
-        public SetPositionResults(int id, Transform position)
-        {
-            this.id = id;
-            this.position = position;
-        }
-    }
-
 
     // Position used to update the position of a supplied object
     private class SetPositionCommand : Command
@@ -48,18 +36,40 @@ public class MainThreadQueue
         }
     }
 
+    public class Results
+    {
+
+    }
+
+
+    public class SetPositionResults: Results
+    {
+        public int id;
+        public Transform position;
+
+        public SetPositionResults(int id, Transform position)
+        {
+            this.id = id;
+            this.position = position;
+        }
+    }
+
+
     private Stack<SetPositionCommand> setPositionPool;
     private Queue<Command> commandQueue;
 
-    public List<SetPositionResults> setPositionResults;
+    public Queue<Results> resultsQueue;
+
+    //public bool resultsReady = false;
     
 
     public MainThreadQueue()
     {
         commandQueue = new Queue<Command>();
+        resultsQueue = new Queue<Results>();
     }
 
-
+    /*
     // Retrieves an elemnet from the pool of commands of generic types
     private static T GetFromPool<T>(Stack<T> pool) where T : new()
     {
@@ -75,7 +85,7 @@ public class MainThreadQueue
     private static void ReturnToPool<T>(Stack<T> pool, T obj)
     {
         pool.Push(obj);
-    }
+    } */
 
 
     // Adds a subclass of type command to the queue of messages to be completed
@@ -88,11 +98,15 @@ public class MainThreadQueue
     // Adds a set position command to the queue
     public void SetPosition(Transform transform, int id)
     {
-        SetPositionCommand command = GetFromPool(setPositionPool);
+        //SetPositionCommand command = GetFromPool(setPositionPool);
+
+        SetPositionCommand command = new SetPositionCommand();
         command.transform = transform;
         command.id = id;
         QueueCommand(command);
+       
     }
+
 
     public void Execute()
     {
@@ -100,6 +114,7 @@ public class MainThreadQueue
 
         if(commandQueue.Count == 0)
         {
+            UnityEngine.Debug.Log("RETURN");
             return;
         }
 
@@ -111,10 +126,12 @@ public class MainThreadQueue
                 {
                     SetPositionCommand setPositionCommand = (SetPositionCommand)baseCommand;
                     Transform newTransform = setPositionCommand.transform;
-                    ReturnToPool(setPositionPool, setPositionCommand);
-
+                    
                     SetPositionResults result = new SetPositionResults(setPositionCommand.id, setPositionCommand.transform);
-                    setPositionResults.Add(result);
+
+                    resultsQueue.Enqueue(result);
+
+                    //ReturnToPool(setPositionPool, setPositionCommand);
                     
                     break;
                 }

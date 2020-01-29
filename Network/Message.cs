@@ -2,10 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class Message
 {
     public int clientID;
     public int message;
+
+    public enum messageTypes
+    {
+        ConnectRequest,
+        DisconnectRequest,
+        ConnectionSuccessful,
+        NewPlayerData,
+        PositionUpdate
+    }
 
     public Message(int clientID, int message)
     {
@@ -21,6 +31,8 @@ public class Message
     }
 }
 
+
+
 public class ConnectMessage: Message
 {
     public int newLocalID;
@@ -33,26 +45,30 @@ public class ConnectMessage: Message
     }
 }
 
+
+
 public class NewPlayerMessage: Message
 {
-    public int id;
+    public int newPlayerID;
 
     public NewPlayerMessage(int clientID, int message, int id)
     {
         this.clientID = clientID;
         this.message = message;
-        this.id = id;
+        this.newPlayerID = id;
     }
 }
 
+
+
 public class PositionUpdateMessage: Message
 {
-    public Transform transform;
+    public Vector3 position;
 
-    public PositionUpdateMessage(int clientID, int message, Transform position)
+    public PositionUpdateMessage(int clientID, int message, Vector3 position)
     {
         this.clientID = clientID;
         this.message = message;
-        this.transform = position;
+        this.position = position;
     }
 }

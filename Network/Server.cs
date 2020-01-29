@@ -17,12 +17,15 @@ public class Server
     CommandDictionary commandDictionary;
     List<RemoteClients> remoteClients;
 
+    Queue<string> mainThreadMessageQueue;
+
 
     public Server()
     {
         this.commandDictionary = new CommandDictionary();
         this.remoteClients = new List<RemoteClients>();
         this.numberOfconnectedClients = 0;
+        this.mainThreadMessageQueue = new Queue<string>();
     }
 
 
@@ -53,20 +56,33 @@ public class Server
     }
 
 
+    public void mainThread()
+    {
+        if(mainThreadMessageQueue.Count > 0)
+        {
+            // ******* TODO: Change this to a switch statement later when more main thread commands are needed
+            string nextMessage = mainThreadMessageQueue.Dequeue();
+            updatePosition(nextMessage);
+            
+        }
+    }
+
+
     // Parses an incoming JSON string into a Message object
     private void parseClientMessage(IPEndPoint client, string message)
     {
-        Debug.Log("SERVER: " + message);
+        //Debug.Log("SERVER: " + message);
 
         Message messageObject = JsonUtility.FromJson<Message>(message);
 
         if(messageObject.message == 0 && messageObject.clientID == -1)
         {
             assignClientID(client);
-
-        }else if(messageObject.message == 4)
+            Debug.Log("SERVER: " + message);
+        }
+        else if(messageObject.message == 4)
         {
-            updatePosition(message);
+           mainThreadMessageQueue.Enqueue(message);
         }
     }
 
@@ -114,6 +130,8 @@ public class Server
                 sendToClient(remote.clientEndPoint, positionUpdate.constructMessage());
             }
         }
+
+        
     }
 
 

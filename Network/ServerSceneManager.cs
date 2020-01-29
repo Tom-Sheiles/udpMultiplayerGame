@@ -21,4 +21,9 @@ public class ServerSceneManager : MonoBehaviour
         udp = new UdpClient(3001);
     }
 
+    private void Update()
+    {
+        if(server != null)
+            server.mainThread();
+    }
 }

@@ -8,7 +8,7 @@ public class RemoteClients {
 
     public int clientID;
     public IPEndPoint clientEndPoint;
-    public Transform clientTransform;
+    public Vector3 clientTransform;
     
 
     public RemoteClients(int id)

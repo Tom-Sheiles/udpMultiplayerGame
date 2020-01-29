@@ -13,16 +13,22 @@ public class Client
 
     UdpClient localClient = new UdpClient(0);
     CommandDictionary commandDictionary;
-    List<RemoteClients> remoteClients;
+    public List<RemoteClients> remoteClients;
 
-    MainThreadQueue mainThreadQueue = new MainThreadQueue();
+    //MainThreadQueue mainThreadQueue = new MainThreadQueue();
+
+    Queue<string> mainThreadMessageQueue;
+    ClientSceneManager sceneManager;
 
     private int localClientID = -1;
 
-    public Client()
+    public Client(ClientSceneManager sceneManager)
     {
         this.commandDictionary = new CommandDictionary();
         this.remoteClients = new List<RemoteClients>();
+        this.mainThreadMessageQueue = new Queue<string>();
+
+        this.sceneManager = sceneManager;
     }
   
 
@@ -49,19 +55,30 @@ public class Client
         sendToServer(connectRequest);
     }
 
-    public void executeCommands()
+    public void mainThread()
     {
-        mainThreadQueue.Execute();
 
-        // ************* TODO: Refactor main thread queue to better fit in with the current architecture of the client and remote client code.
-        //                     This should include updating how the results are stored and making it a more streamlined process. Possibly adding the list of all clients to the main thread class
-        //                     as a dictionary and using the id as a key to perform the operations in O(1) time instead of adding the update messages to a stack of messages.
-        //                     This class can then directly read the position of each client from that list.
+        if(mainThreadMessageQueue.Count > 0)
+        {
+            // ******* TODO: Change this to a switch statement later when more main thread commands are needed
+            string nextMessage = mainThreadMessageQueue.Dequeue();
+            PositionUpdateMessage positionUpdateMessage = JsonUtility.FromJson<PositionUpdateMessage>(nextMessage);
+            foreach(RemoteClients remote in remoteClients)
+            {
+                if(remote.clientID == positionUpdateMessage.clientID)
+                {
+                    //Debug.LogWarning("Client " + localClientID + ": " + "Changed client " + remote.clientID + " to position " + positionUpdateMessage.position.ToString());
+                    remote.clientTransform = positionUpdateMessage.position;
+                    //sceneManager.updateRemote();
+                }
+            }
+        }
+      
     }
 
 
     // Updates the location of position on the server and communicates it to all connected clients
-    public void sendPositionUpdate(Transform position)
+    public void sendPositionUpdate(Vector3 position)
     {
         PositionUpdateMessage positionUpdateMessage = new PositionUpdateMessage(localClientID, 4, position);
         sendToServer(positionUpdateMessage.constructMessage());
@@ -81,7 +98,7 @@ public class Client
         {
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 0);
             byte[] buffer = localClient.Receive(ref endPoint);
-            Debug.Log("CLIENT ID: " + localClientID + ": " + Encoding.ASCII.GetString(buffer));
+            //Debug.Log("CLIENT ID: " + localClientID + ": " + Encoding.ASCII.GetString(buffer));
 
             parseServerMessage(Encoding.ASCII.GetString(buffer));
 
@@ -122,19 +139,24 @@ public class Client
     private void addNewClient(string message)
     {
         NewPlayerMessage newPlayerMessage = JsonUtility.FromJson<NewPlayerMessage>(message);
-        RemoteClients newClientObject = new RemoteClients(newPlayerMessage.clientID);
+        RemoteClients newClientObject = new RemoteClients(newPlayerMessage.newPlayerID);
 
         remoteClients.Add(newClientObject);
+
+        sceneManager.instantiateRemote(message);
+
     }
 
 
     private void setClientTransform(string message)
     {
-        PositionUpdateMessage positionUpdateMessage = JsonUtility.FromJson<PositionUpdateMessage>(message);
+        /*PositionUpdateMessage positionUpdateMessage = JsonUtility.FromJson<PositionUpdateMessage>(message);
 
         Debug.Log(localClientID.ToString() +  message);
 
-        mainThreadQueue.SetPosition(positionUpdateMessage.transform, positionUpdateMessage.clientID);
+        mainThreadQueue.SetPosition(positionUpdateMessage.transform, positionUpdateMessage.clientID);*/
+
+        mainThreadMessageQueue.Enqueue(message);
 
     }
 }
