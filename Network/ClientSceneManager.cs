@@ -13,12 +13,13 @@ public class ClientSceneManager : MonoBehaviour
     [SerializeField] private InputField addressInput;
     [SerializeField] private float UpdateDelay = 0.5f;
     [SerializeField] private float clientSmoothness = 0.5f;
+    [SerializeField] private float clientRotateSmoothness = 0.5f;
 
     public Transform playerTransform;
-    private Transform lastTransform;
+    public Transform rotationTransform;
 
     public GameObject playerPrefab;
-    public GameObject newRemote;
+    public List<GameObject> remoteGameObjects;
 
 
     private void Start()
@@ -41,12 +42,20 @@ public class ClientSceneManager : MonoBehaviour
             string nextMessage = mainThreadQueue.Dequeue();
             NewPlayerMessage newPlayerMessage = JsonUtility.FromJson<NewPlayerMessage>(nextMessage);
 
-            newRemote = Instantiate(playerPrefab, new Vector3(1, 3, 1), Quaternion.identity);
+            remoteGameObjects.Add(Instantiate(playerPrefab, new Vector3(1, 3, 1), Quaternion.identity));
         }
 
-        if(newRemote != null)
+        if(remoteGameObjects != null)
         {
-            newRemote.transform.position = Vector3.Lerp(newRemote.transform.position, client.remoteClients[0].clientTransform, clientSmoothness);
+            for (int i = 0; i < remoteGameObjects.Count; i++)
+            {
+                // ********* TODO: This is dangerous code. The order of the two Lists remote clients and remote client objects might not be the same, updating the model of a different player than expected
+                //                 While working, a more robust system that checks based on the id of the remote client should be used.
+                //                 Remotes could be created with a remote controller class that contains their id and information on the scene object. 
+
+                remoteGameObjects[i].transform.position = Vector3.Lerp(remoteGameObjects[i].transform.position, client.remoteClients[i].clientTransform, clientSmoothness);
+                remoteGameObjects[i].transform.rotation = Quaternion.Lerp(remoteGameObjects[i].transform.rotation, client.remoteClients[i].clientRotation, clientRotateSmoothness);
+            }
         }
             
             
@@ -62,7 +71,7 @@ public class ClientSceneManager : MonoBehaviour
 
     public void UpdatePosition()
     {
-        client.sendPositionUpdate(playerTransform.position);
+        client.sendPositionUpdate(playerTransform.position, rotationTransform.rotation);
     }
 
     public void updateRemote()

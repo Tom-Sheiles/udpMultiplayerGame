@@ -69,6 +69,7 @@ public class Client
                 {
                     //Debug.LogWarning("Client " + localClientID + ": " + "Changed client " + remote.clientID + " to position " + positionUpdateMessage.position.ToString());
                     remote.clientTransform = positionUpdateMessage.position;
+                    remote.clientRotation = positionUpdateMessage.rotation;
                     //sceneManager.updateRemote();
                 }
             }
@@ -78,9 +79,9 @@ public class Client
 
 
     // Updates the location of position on the server and communicates it to all connected clients
-    public void sendPositionUpdate(Vector3 position)
+    public void sendPositionUpdate(Vector3 position, Quaternion rotation)
     {
-        PositionUpdateMessage positionUpdateMessage = new PositionUpdateMessage(localClientID, 4, position);
+        PositionUpdateMessage positionUpdateMessage = new PositionUpdateMessage(localClientID, 4, position, rotation);
         sendToServer(positionUpdateMessage.constructMessage());
         
     }

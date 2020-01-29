@@ -64,11 +64,13 @@ public class NewPlayerMessage: Message
 public class PositionUpdateMessage: Message
 {
     public Vector3 position;
+    public Quaternion rotation;
 
-    public PositionUpdateMessage(int clientID, int message, Vector3 position)
+    public PositionUpdateMessage(int clientID, int message, Vector3 position, Quaternion rotation)
     {
         this.clientID = clientID;
         this.message = message;
         this.position = position;
+        this.rotation = rotation;
     }
 }
