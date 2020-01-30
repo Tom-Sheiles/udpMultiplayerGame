@@ -8,6 +8,9 @@ public class ClientSceneManager : MonoBehaviour
     Client client;
     private bool isActive = false;
     private Queue<string> mainThreadQueue;
+    private RemoteController localRemoteController;
+    private NetworkRaycastWeapons raycastWeapons;
+    private UnityTemplateProjects.SimpleCameraController cameraController;
 
     [SerializeField] private InputField portInput;
     [SerializeField] private InputField addressInput;
@@ -27,40 +30,58 @@ public class ClientSceneManager : MonoBehaviour
         portInput.text = "3000";
         mainThreadQueue = new Queue<string>();
 
+        cameraController = playerTransform.parent.gameObject.GetComponent<UnityTemplateProjects.SimpleCameraController>();
+
+        localRemoteController = playerTransform.gameObject.GetComponent<RemoteController>();
+        raycastWeapons = playerTransform.gameObject.GetComponent<NetworkRaycastWeapons>();
+        localRemoteController.enabled = false;
+        raycastWeapons.enabled = true;
+
     }
 
     private void Update()
     {
         if (client != null)
         {
+            // Runs the main loop messages on the client object
             client.mainThread();
         }
 
+        // Dequeues and parses main thread messages for the game client.
         if (mainThreadQueue.Count > 0)
         {
             // ********* TODO: Change this to a switch when more messages are added
             string nextMessage = mainThreadQueue.Dequeue();
             NewPlayerMessage newPlayerMessage = JsonUtility.FromJson<NewPlayerMessage>(nextMessage);
 
-            remoteGameObjects.Add(Instantiate(playerPrefab, new Vector3(1, 3, 1), Quaternion.identity));
+            GameObject newRemote = Instantiate(playerPrefab, new Vector3(0, -2, 0), Quaternion.identity);
+            RemoteController controller = newRemote.GetComponent<RemoteController>();
+            controller.initRemote(newPlayerMessage.newPlayerID);
+
+            remoteGameObjects.Add(newRemote);
         }
 
+
+        // Update the position of the remote clients
         if(remoteGameObjects != null)
         {
-            for (int i = 0; i < remoteGameObjects.Count; i++)
-            {
-                // ********* TODO: This is dangerous code. The order of the two Lists remote clients and remote client objects might not be the same, updating the model of a different player than expected
-                //                 While working, a more robust system that checks based on the id of the remote client should be used.
-                //                 Remotes could be created with a remote controller class that contains their id and information on the scene object. 
 
-                remoteGameObjects[i].transform.position = Vector3.Lerp(remoteGameObjects[i].transform.position, client.remoteClients[i].clientTransform, clientSmoothness);
-                remoteGameObjects[i].transform.rotation = Quaternion.Lerp(remoteGameObjects[i].transform.rotation, client.remoteClients[i].clientRotation, clientRotateSmoothness);
+            for(int i = 0; i < remoteGameObjects.Count; i++)
+            {
+                RemoteController rem = remoteGameObjects[i].GetComponent<RemoteController>();
+                if(rem.id == client.remoteClients[i].clientID)
+                {
+                    remoteGameObjects[i].transform.position = Vector3.Lerp(remoteGameObjects[i].transform.position, client.remoteClients[i].clientTransform, clientSmoothness);
+                    remoteGameObjects[i].transform.rotation = Quaternion.Lerp(remoteGameObjects[i].transform.rotation, client.remoteClients[i].clientRotation, clientRotateSmoothness);
+                }
             }
-        }
-            
+
+        }         
             
     }
 
+    // Called when connect to server button is pressed, uses the values of portInput and address input.
+    // Also begins sending position updates to the server. this maybe should be changed if a lobby is used.
     public void Connect()
     {
         this.client = new Client(this);
@@ -69,6 +90,7 @@ public class ClientSceneManager : MonoBehaviour
         InvokeRepeating("UpdatePosition", 0, UpdateDelay);
     }
 
+    // Sends a position and rotation update to the server after updatedelay seconds
     public void UpdatePosition()
     {
         client.sendPositionUpdate(playerTransform.position, rotationTransform.rotation);
@@ -84,5 +106,15 @@ public class ClientSceneManager : MonoBehaviour
     public void instantiateRemote(string remote)
     {
         mainThreadQueue.Enqueue(remote);
+    }
+
+    public void raycastCall(RemoteController objectHit)
+    {
+        client.sendRaycastHit(objectHit);
+    }
+
+    public void takeDamage()
+    {
+        cameraController.m_TargetCameraState.SetFromVector(new Vector3(0, -2, 0));
     }
 }

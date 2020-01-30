@@ -14,13 +14,14 @@ public class Message
         DisconnectRequest,
         ConnectionSuccessful,
         NewPlayerData,
-        PositionUpdate
+        PositionUpdate,
+        RaycastMessage
     }
 
-    public Message(int clientID, int message)
+    public Message(int clientID)
     {
         this.clientID = clientID;
-        this.message = message;
+        this.message = (int)messageTypes.ConnectRequest;
     }
 
     public Message() { }
@@ -37,10 +38,10 @@ public class ConnectMessage: Message
 {
     public int newLocalID;
 
-    public ConnectMessage(int clientID, int message, int newID)
+    public ConnectMessage(int clientID, int newID)
     {
         this.clientID = clientID;
-        this.message = message;
+        this.message = (int)messageTypes.ConnectionSuccessful;
         this.newLocalID = newID;
     }
 }
@@ -51,10 +52,10 @@ public class NewPlayerMessage: Message
 {
     public int newPlayerID;
 
-    public NewPlayerMessage(int clientID, int message, int id)
+    public NewPlayerMessage(int clientID, int id)
     {
         this.clientID = clientID;
-        this.message = message;
+        this.message = (int)messageTypes.NewPlayerData;
         this.newPlayerID = id;
     }
 }
@@ -66,11 +67,25 @@ public class PositionUpdateMessage: Message
     public Vector3 position;
     public Quaternion rotation;
 
-    public PositionUpdateMessage(int clientID, int message, Vector3 position, Quaternion rotation)
+    public PositionUpdateMessage(int clientID, Vector3 position, Quaternion rotation)
     {
         this.clientID = clientID;
-        this.message = message;
+        this.message = (int)messageTypes.PositionUpdate;
         this.position = position;
         this.rotation = rotation;
+    }
+}
+
+
+
+public class RaycastHitMessage: Message
+{
+    public int targetID;
+
+    public RaycastHitMessage(int clientID, int targetID)
+    {
+        this.clientID = clientID;
+        this.message = (int)messageTypes.RaycastMessage;
+        this.targetID = targetID;
     }
 }

@@ -48,10 +48,9 @@ public class Client
             localClient.Connect(hostName, connectPort);
         }
         
-        Message messageObject = new Message(localClientID, 0);
+        Message messageObject = new Message(localClientID);
         string connectRequest = messageObject.constructMessage();
 
-        //localClient.Send(Encoding.ASCII.GetBytes(connectRequest), connectRequest.Length);
         sendToServer(connectRequest);
     }
 
@@ -60,18 +59,28 @@ public class Client
 
         if(mainThreadMessageQueue.Count > 0)
         {
-            // ******* TODO: Change this to a switch statement later when more main thread commands are needed
+
             string nextMessage = mainThreadMessageQueue.Dequeue();
-            PositionUpdateMessage positionUpdateMessage = JsonUtility.FromJson<PositionUpdateMessage>(nextMessage);
-            foreach(RemoteClients remote in remoteClients)
+            Message messageObject = JsonUtility.FromJson<Message>(nextMessage);
+
+            switch (messageObject.message)
             {
-                if(remote.clientID == positionUpdateMessage.clientID)
-                {
-                    //Debug.LogWarning("Client " + localClientID + ": " + "Changed client " + remote.clientID + " to position " + positionUpdateMessage.position.ToString());
-                    remote.clientTransform = positionUpdateMessage.position;
-                    remote.clientRotation = positionUpdateMessage.rotation;
-                    //sceneManager.updateRemote();
-                }
+                case (int)Message.messageTypes.PositionUpdate:
+
+                    PositionUpdateMessage positionUpdateMessage = JsonUtility.FromJson<PositionUpdateMessage>(nextMessage);
+                    foreach (RemoteClients remote in remoteClients)
+                    {
+                        if (remote.clientID == positionUpdateMessage.clientID)
+                        {
+                            remote.clientTransform = positionUpdateMessage.position;
+                            remote.clientRotation = positionUpdateMessage.rotation;
+                        }
+                    }
+                    break;
+
+                    case (int)Message.messageTypes.RaycastMessage:
+                        sceneManager.takeDamage();
+                    break;
             }
         }
       
@@ -81,8 +90,14 @@ public class Client
     // Updates the location of position on the server and communicates it to all connected clients
     public void sendPositionUpdate(Vector3 position, Quaternion rotation)
     {
-        PositionUpdateMessage positionUpdateMessage = new PositionUpdateMessage(localClientID, 4, position, rotation);
-        sendToServer(positionUpdateMessage.constructMessage());
+        PositionUpdateMessage positionUpdateMessage = new PositionUpdateMessage(localClientID, position, rotation);
+        sendToServer(positionUpdateMessage.constructMessage());   
+    }
+
+    public void sendRaycastHit(RemoteController objectHit)
+    {
+        RaycastHitMessage raycastHitMessage = new RaycastHitMessage(localClientID, objectHit.id);
+        sendToServer(raycastHitMessage.constructMessage());
         
     }
 
@@ -114,14 +129,17 @@ public class Client
 
         switch (messageObject.message)
         {
-            case 2:
+            case (int)Message.messageTypes.ConnectionSuccessful:
                 connectionAccepted(message);
                 break;
-            case 3:
+            case (int)Message.messageTypes.NewPlayerData:
                 addNewClient(message);
                 break;
-            case 4:
+            case (int)Message.messageTypes.PositionUpdate:
                 setClientTransform(message);
+                break;
+            case (int)Message.messageTypes.RaycastMessage:
+                raycastHit(message);
                 break;
         }
     }
@@ -151,13 +169,12 @@ public class Client
 
     private void setClientTransform(string message)
     {
-        /*PositionUpdateMessage positionUpdateMessage = JsonUtility.FromJson<PositionUpdateMessage>(message);
-
-        Debug.Log(localClientID.ToString() +  message);
-
-        mainThreadQueue.SetPosition(positionUpdateMessage.transform, positionUpdateMessage.clientID);*/
-
         mainThreadMessageQueue.Enqueue(message);
+    }
 
+
+    private void raycastHit(string message)
+    {
+        mainThreadMessageQueue.Enqueue(message);
     }
 }

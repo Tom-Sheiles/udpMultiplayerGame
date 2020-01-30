@@ -71,18 +71,22 @@ public class Server
     // Parses an incoming JSON string into a Message object
     private void parseClientMessage(IPEndPoint client, string message)
     {
-        //Debug.Log("SERVER: " + message);
-
         Message messageObject = JsonUtility.FromJson<Message>(message);
 
-        if(messageObject.message == 0 && messageObject.clientID == -1)
+        switch (messageObject.message)
         {
-            assignClientID(client);
-            Debug.Log("SERVER: " + message);
-        }
-        else if(messageObject.message == 4)
-        {
-           mainThreadMessageQueue.Enqueue(message);
+            case (int)Message.messageTypes.ConnectRequest:
+                assignClientID(client);
+                Debug.Log("SERVER: " + message);
+                break;
+
+            case (int)Message.messageTypes.PositionUpdate:
+                mainThreadMessageQueue.Enqueue(message);
+                break;
+
+            case (int)Message.messageTypes.RaycastMessage:
+                raycastHit(message);
+                break;
         }
     }
 
@@ -91,7 +95,7 @@ public class Server
     private void assignClientID(IPEndPoint client)
     {
         RemoteClients newRemoteClient = new RemoteClients(numberOfconnectedClients);
-        ConnectMessage connectMessage = new ConnectMessage(-2, 2, numberOfconnectedClients);
+        ConnectMessage connectMessage = new ConnectMessage(-2, numberOfconnectedClients);
         newRemoteClient.setEndPoint(client);
 
 
@@ -100,7 +104,7 @@ public class Server
         // Send all existing players to the new player
         foreach(RemoteClients remote in remoteClients)
         {
-            NewPlayerMessage existingPlayerMessage = new NewPlayerMessage(-2, 3, remote.clientID);
+            NewPlayerMessage existingPlayerMessage = new NewPlayerMessage(-2, remote.clientID);
             sendToClient(client, existingPlayerMessage.constructMessage());
         }
 
@@ -110,7 +114,7 @@ public class Server
         // Send the new client joined to all existing clients
         for (int i = 0; i < numberOfconnectedClients; i++)
         {
-            NewPlayerMessage newPlayerMessage = new NewPlayerMessage(-2, 3, numberOfconnectedClients);
+            NewPlayerMessage newPlayerMessage = new NewPlayerMessage(-2, numberOfconnectedClients);
             sendToClient(remoteClients[i].clientEndPoint, newPlayerMessage.constructMessage());
         }
 
@@ -131,6 +135,18 @@ public class Server
             }
         }
 
+    }
+
+    private void raycastHit(string message)
+    {
+        RaycastHitMessage raycastHitMessage = JsonUtility.FromJson<RaycastHitMessage>(message);
+        foreach(RemoteClients remote in remoteClients)
+        {
+            if(remote.clientID == raycastHitMessage.targetID)
+            {
+                sendToClient(remote.clientEndPoint, message);
+            }
+        }
         
     }
 
