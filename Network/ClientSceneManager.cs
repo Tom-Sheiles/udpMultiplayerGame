@@ -22,6 +22,7 @@ public class ClientSceneManager : MonoBehaviour
     public Transform rotationTransform;
 
     public GameObject playerPrefab;
+    public GameObject nameTagPrefab;
     public List<GameObject> remoteGameObjects;
 
 
@@ -55,6 +56,8 @@ public class ClientSceneManager : MonoBehaviour
             NewPlayerMessage newPlayerMessage = JsonUtility.FromJson<NewPlayerMessage>(nextMessage);
 
             GameObject newRemote = Instantiate(playerPrefab, new Vector3(0, -2, 0), Quaternion.identity);
+            //GameObject nameTag = Instantiate(nameTagPrefab, newRemote.transform.position, Quaternion.identity);
+            //nameTag.GetComponent<StrictFollowObject>().target = newRemote.transform;
             RemoteController controller = newRemote.GetComponent<RemoteController>();
             controller.initRemote(newPlayerMessage.newPlayerID);
 
@@ -71,8 +74,8 @@ public class ClientSceneManager : MonoBehaviour
                 RemoteController rem = remoteGameObjects[i].GetComponent<RemoteController>();
                 if(rem.id == client.remoteClients[i].clientID)
                 {
-                    remoteGameObjects[i].transform.position = Vector3.Lerp(remoteGameObjects[i].transform.position, client.remoteClients[i].clientTransform, clientSmoothness);
-                    remoteGameObjects[i].transform.rotation = Quaternion.Lerp(remoteGameObjects[i].transform.rotation, client.remoteClients[i].clientRotation, clientRotateSmoothness);
+                    remoteGameObjects[i].transform.localPosition = Vector3.Lerp(remoteGameObjects[i].transform.position, client.remoteClients[i].clientTransform, clientSmoothness);
+                    remoteGameObjects[i].transform.localRotation = Quaternion.Lerp(remoteGameObjects[i].transform.rotation, client.remoteClients[i].clientRotation, clientRotateSmoothness);
                 }
             }
 
@@ -115,6 +118,7 @@ public class ClientSceneManager : MonoBehaviour
 
     public void takeDamage()
     {
+        Debug.Log("Take damage");
         cameraController.m_TargetCameraState.SetFromVector(new Vector3(0, -2, 0));
     }
 }

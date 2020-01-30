@@ -85,6 +85,7 @@ public class Server
                 break;
 
             case (int)Message.messageTypes.RaycastMessage:
+                Debug.Log("SERVER: " + message);
                 raycastHit(message);
                 break;
         }
