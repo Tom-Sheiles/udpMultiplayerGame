@@ -10,6 +10,7 @@ public class RemoteClients {
     public IPEndPoint clientEndPoint;
     public Vector3 clientTransform;
     public Quaternion clientRotation;
+    public string playerName;
     
 
     public RemoteClients(int id)

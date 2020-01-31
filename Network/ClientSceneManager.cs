@@ -10,10 +10,11 @@ public class ClientSceneManager : MonoBehaviour
     private Queue<string> mainThreadQueue;
     private RemoteController localRemoteController;
     private NetworkRaycastWeapons raycastWeapons;
-    private UnityTemplateProjects.SimpleCameraController cameraController;
+    private PlayerMovement playerMovement;
 
     [SerializeField] private InputField portInput;
     [SerializeField] private InputField addressInput;
+    [SerializeField] private InputField nameInpupt;
     [SerializeField] private float UpdateDelay = 0.5f;
     [SerializeField] private float clientSmoothness = 0.5f;
     [SerializeField] private float clientRotateSmoothness = 0.5f;
@@ -31,12 +32,14 @@ public class ClientSceneManager : MonoBehaviour
         portInput.text = "3000";
         mainThreadQueue = new Queue<string>();
 
-        cameraController = playerTransform.parent.gameObject.GetComponent<UnityTemplateProjects.SimpleCameraController>();
-
-        localRemoteController = playerTransform.gameObject.GetComponent<RemoteController>();
+        localRemoteController = playerTransform.gameObject.GetComponentInChildren<RemoteController>();
         raycastWeapons = playerTransform.gameObject.GetComponent<NetworkRaycastWeapons>();
+        playerMovement = playerTransform.GetComponent<PlayerMovement>();
         localRemoteController.enabled = false;
-        raycastWeapons.enabled = true;
+        playerMovement.enabled = true;
+
+        if(raycastWeapons != null)
+            raycastWeapons.enabled = true;
 
     }
 
@@ -55,10 +58,16 @@ public class ClientSceneManager : MonoBehaviour
             string nextMessage = mainThreadQueue.Dequeue();
             NewPlayerMessage newPlayerMessage = JsonUtility.FromJson<NewPlayerMessage>(nextMessage);
 
-            GameObject newRemote = Instantiate(playerPrefab, new Vector3(0, -2, 0), Quaternion.identity);
-            //GameObject nameTag = Instantiate(nameTagPrefab, newRemote.transform.position, Quaternion.identity);
-            //nameTag.GetComponent<StrictFollowObject>().target = newRemote.transform;
-            RemoteController controller = newRemote.GetComponent<RemoteController>();
+            GameObject newRemote = Instantiate(playerPrefab, new Vector3(0, 2, 0), Quaternion.identity);
+
+            /*if (!Application.isEditor) // Instances the nametag of the remote player.
+            {
+                GameObject nameTag = Instantiate(nameTagPrefab, newRemote.transform.position, Quaternion.identity);
+                nameTag.GetComponent<StrictFollowObject>().target = newRemote.transform;
+                nameTag.GetComponentInChildren<Text>().text = newPlayerMessage.clientName;
+            }*/
+
+            RemoteController controller = newRemote.GetComponentInChildren<RemoteController>();
             controller.initRemote(newPlayerMessage.newPlayerID);
 
             remoteGameObjects.Add(newRemote);
@@ -71,7 +80,7 @@ public class ClientSceneManager : MonoBehaviour
 
             for(int i = 0; i < remoteGameObjects.Count; i++)
             {
-                RemoteController rem = remoteGameObjects[i].GetComponent<RemoteController>();
+                RemoteController rem = remoteGameObjects[i].GetComponentInChildren<RemoteController>();
                 if(rem.id == client.remoteClients[i].clientID)
                 {
                     remoteGameObjects[i].transform.localPosition = Vector3.Lerp(remoteGameObjects[i].transform.position, client.remoteClients[i].clientTransform, clientSmoothness);
@@ -89,7 +98,7 @@ public class ClientSceneManager : MonoBehaviour
     {
         this.client = new Client(this);
         isActive = true;
-        client.ConnectToServer(int.Parse(portInput.text), addressInput.text);
+        client.ConnectToServer(int.Parse(portInput.text), addressInput.text, nameInpupt.text);
         InvokeRepeating("UpdatePosition", 0, UpdateDelay);
     }
 
@@ -118,7 +127,6 @@ public class ClientSceneManager : MonoBehaviour
 
     public void takeDamage()
     {
-        Debug.Log("Take damage");
-        cameraController.m_TargetCameraState.SetFromVector(new Vector3(0, -2, 0));
+        playerMovement.changePosition(new Vector3(0, 5, 0));
     }
 }

@@ -33,7 +33,7 @@ public class Client
   
 
     // Attempts to create a connection to the server with given host and port
-    public void ConnectToServer(int connectPort, string hostName)
+    public void ConnectToServer(int connectPort, string hostName, string playerName)
     {
 
         Thread serverResponseThread = new Thread(new ThreadStart(socketListen));
@@ -47,10 +47,21 @@ public class Client
         {
             localClient.Connect(hostName, connectPort);
         }
-        
-        Message messageObject = new Message(localClientID);
-        string connectRequest = messageObject.constructMessage();
 
+        Message messageObject;
+
+        if (playerName == "")
+        {
+            messageObject = new Message(localClientID);
+           
+        }
+        else
+        {
+            messageObject = new Message(localClientID, playerName);
+
+        }
+
+        string connectRequest = messageObject.constructMessage();
         sendToServer(connectRequest);
     }
 

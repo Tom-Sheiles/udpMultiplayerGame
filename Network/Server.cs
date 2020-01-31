@@ -76,7 +76,7 @@ public class Server
         switch (messageObject.message)
         {
             case (int)Message.messageTypes.ConnectRequest:
-                assignClientID(client);
+                assignClientID(client, message);
                 Debug.Log("SERVER: " + message);
                 break;
 
@@ -85,7 +85,6 @@ public class Server
                 break;
 
             case (int)Message.messageTypes.RaycastMessage:
-                Debug.Log("SERVER: " + message);
                 raycastHit(message);
                 break;
         }
@@ -93,10 +92,11 @@ public class Server
 
 
     // Called when a client connect request is sent from a new client. assigns a new id and responds with the current game state
-    private void assignClientID(IPEndPoint client)
+    private void assignClientID(IPEndPoint client, string message)
     {
         RemoteClients newRemoteClient = new RemoteClients(numberOfconnectedClients);
         ConnectMessage connectMessage = new ConnectMessage(-2, numberOfconnectedClients);
+        Message recievedMessage = JsonUtility.FromJson<Message>(message);
         newRemoteClient.setEndPoint(client);
 
 
@@ -105,7 +105,7 @@ public class Server
         // Send all existing players to the new player
         foreach(RemoteClients remote in remoteClients)
         {
-            NewPlayerMessage existingPlayerMessage = new NewPlayerMessage(-2, remote.clientID);
+            NewPlayerMessage existingPlayerMessage = new NewPlayerMessage(-2, remote.clientID, remote.playerName);
             sendToClient(client, existingPlayerMessage.constructMessage());
         }
 
@@ -115,7 +115,7 @@ public class Server
         // Send the new client joined to all existing clients
         for (int i = 0; i < numberOfconnectedClients; i++)
         {
-            NewPlayerMessage newPlayerMessage = new NewPlayerMessage(-2, numberOfconnectedClients);
+            NewPlayerMessage newPlayerMessage = new NewPlayerMessage(-2, numberOfconnectedClients, recievedMessage.clientName);
             sendToClient(remoteClients[i].clientEndPoint, newPlayerMessage.constructMessage());
         }
 

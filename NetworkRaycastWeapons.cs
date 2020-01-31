@@ -12,7 +12,7 @@ public class NetworkRaycastWeapons : MonoBehaviour
 
     void Start()
     {
-        camera = gameObject.transform.parent.gameObject; 
+        camera = Camera.main.gameObject;
     }
 
 
@@ -31,9 +31,9 @@ public class NetworkRaycastWeapons : MonoBehaviour
         if(Physics.Raycast(camera.transform.position, camera.transform.TransformDirection(Vector3.forward), out objectHit, projectileMaxDistance))
         {
             Debug.DrawRay(camera.transform.position, camera.transform.TransformDirection(Vector3.forward) * projectileMaxDistance, Color.red);
-            if(objectHit.transform.gameObject.GetComponent<RemoteController>() != null)
+            if(objectHit.transform.gameObject.GetComponentInChildren<RemoteController>() != null)
             {
-                RemoteController remoteController = objectHit.transform.gameObject.GetComponent<RemoteController>();
+                RemoteController remoteController = objectHit.transform.gameObject.GetComponentInChildren<RemoteController>();
                 sceneManager.raycastCall(remoteController);
                 
             }

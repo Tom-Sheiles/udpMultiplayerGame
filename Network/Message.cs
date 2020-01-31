@@ -7,6 +7,7 @@ public class Message
 {
     public int clientID;
     public int message;
+    public string clientName;
 
     public enum messageTypes
     {
@@ -18,10 +19,18 @@ public class Message
         RaycastMessage
     }
 
+    public Message(int clientID, string clientName)
+    {
+        this.clientID = clientID;
+        this.message = (int)messageTypes.ConnectRequest;
+        this.clientName = clientName;
+    }
+
     public Message(int clientID)
     {
         this.clientID = clientID;
         this.message = (int)messageTypes.ConnectRequest;
+        this.clientName = "NewPlayer";
     }
 
     public Message() { }
@@ -52,11 +61,12 @@ public class NewPlayerMessage: Message
 {
     public int newPlayerID;
 
-    public NewPlayerMessage(int clientID, int id)
+    public NewPlayerMessage(int clientID, int id, string clientName)
     {
         this.clientID = clientID;
         this.message = (int)messageTypes.NewPlayerData;
         this.newPlayerID = id;
+        this.clientName = clientName;
     }
 }
 
