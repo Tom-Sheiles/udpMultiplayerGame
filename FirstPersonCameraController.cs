@@ -20,6 +20,7 @@ public class FirstPersonCameraController : MonoBehaviour
         {
             yaw = Mathf.Lerp(yaw, target.yaw, rotationLerpPct);
             pitch = Mathf.Lerp(pitch, target.pitch, rotationLerpPct);
+            pitch = Mathf.Clamp(pitch, -90f, 90f);
         }
 
         public void UpdateTransform(Transform t)
@@ -31,6 +32,8 @@ public class FirstPersonCameraController : MonoBehaviour
     CameraState targetState = new CameraState();
     CameraState InterpolateCameraState = new CameraState();
     GameObject playerObject;
+    float RotY;
+    float RotX;
 
     public bool invertY = false;
     public AnimationCurve mouseSensitivityCurve = new AnimationCurve(new Keyframe(0f, 0.5f, 0f, 5f), new Keyframe(1f, 2.5f, 0f, 0f));
@@ -60,7 +63,10 @@ public class FirstPersonCameraController : MonoBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
 
-            var mouseMovement = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y") * (invertY ? 1 : -1));
+            RotX = Input.GetAxis("Mouse X");
+            RotY = Input.GetAxis("Mouse Y");
+
+            var mouseMovement = new Vector2(RotX, RotY * (invertY ? 1 : -1));
             var mouseSenseFactor = mouseSensitivityCurve.Evaluate(mouseMovement.magnitude);
 
             targetState.yaw += mouseMovement.x * mouseSenseFactor;
@@ -77,6 +83,7 @@ public class FirstPersonCameraController : MonoBehaviour
             characterRotation.z = 0;
 
             playerObject.transform.rotation = characterRotation;
+        
         }
         else
         {

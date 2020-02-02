@@ -14,13 +14,14 @@ public class Client
     UdpClient localClient = new UdpClient(0);
     CommandDictionary commandDictionary;
     public List<RemoteClients> remoteClients;
+    NetworkInstantiate networkInst;
 
     //MainThreadQueue mainThreadQueue = new MainThreadQueue();
 
     Queue<string> mainThreadMessageQueue;
     ClientSceneManager sceneManager;
 
-    private int localClientID = -1;
+    public int localClientID = -1;
 
     public Client(ClientSceneManager sceneManager)
     {
@@ -29,6 +30,7 @@ public class Client
         this.mainThreadMessageQueue = new Queue<string>();
 
         this.sceneManager = sceneManager;
+        networkInst = sceneManager.GetComponent<NetworkInstantiate>();
     }
   
 
@@ -76,6 +78,14 @@ public class Client
 
             switch (messageObject.message)
             {
+                case (int)Message.messageTypes.ConnectionSuccessful:
+                    ConnectMessage connectMessage = JsonUtility.FromJson<ConnectMessage>(nextMessage);
+                    if (connectMessage.isInProgress)
+                    {
+                        sceneManager.spawnLocalPlayer();
+                    }
+                break;
+
                 case (int)Message.messageTypes.PositionUpdate:
 
                     PositionUpdateMessage positionUpdateMessage = JsonUtility.FromJson<PositionUpdateMessage>(nextMessage);
@@ -87,11 +97,16 @@ public class Client
                             remote.clientRotation = positionUpdateMessage.rotation;
                         }
                     }
-                    break;
+                break;
 
-                    case (int)Message.messageTypes.RaycastMessage:
-                        sceneManager.takeDamage();
-                    break;
+                case (int)Message.messageTypes.RaycastMessage:
+                    sceneManager.takeDamage();
+                break;
+
+                case (int)Message.messageTypes.InstantiateObject:
+                    networkInst.recieveInstance(nextMessage);
+                break;
+
             }
         }
       
@@ -112,7 +127,7 @@ public class Client
         
     }
 
-    private void sendToServer(string message)
+    public void sendToServer(string message)
     {
         localClient.Send(Encoding.ASCII.GetBytes(message), message.Length);
     }
@@ -152,6 +167,9 @@ public class Client
             case (int)Message.messageTypes.RaycastMessage:
                 raycastHit(message);
                 break;
+            case (int)Message.messageTypes.InstantiateObject:
+                instanceMainThread(message);
+                break;
         }
     }
 
@@ -161,6 +179,8 @@ public class Client
     {
         ConnectMessage connectMessage = JsonUtility.FromJson<ConnectMessage>(message);
         localClientID = connectMessage.newLocalID;
+
+        mainThreadMessageQueue.Enqueue(message);
 
     }
 
@@ -185,6 +205,11 @@ public class Client
 
 
     private void raycastHit(string message)
+    {
+        mainThreadMessageQueue.Enqueue(message);
+    }
+
+    private void instanceMainThread(string message)
     {
         mainThreadMessageQueue.Enqueue(message);
     }

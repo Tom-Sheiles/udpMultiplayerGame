@@ -11,20 +11,30 @@ public class ClientSceneManager : MonoBehaviour
     private RemoteController localRemoteController;
     private NetworkRaycastWeapons raycastWeapons;
     private PlayerMovement playerMovement;
+    private NetworkInstantiate networkInstantiate;
 
+    [Header("Multiplayer UI")]
     [SerializeField] private InputField portInput;
     [SerializeField] private InputField addressInput;
     [SerializeField] private InputField nameInpupt;
+
+    [Header("Update Rate Values")]
     [SerializeField] private float UpdateDelay = 0.5f;
     [SerializeField] private float clientSmoothness = 0.5f;
     [SerializeField] private float clientRotateSmoothness = 0.5f;
 
-    public Transform playerTransform;
-    public Transform rotationTransform;
+    [HideInInspector] public Transform playerTransform;
+    [HideInInspector] public Transform rotationTransform;
 
+    [Header("Remote Prefabs")]
     public GameObject playerPrefab;
     public GameObject nameTagPrefab;
-    public List<GameObject> remoteGameObjects;
+    [HideInInspector] public List<GameObject> remoteGameObjects;
+
+    [Header("Spawn Options")]
+    public Transform[] spawnPositions;
+    public bool randomSpawn;
+    public GameObject lobbyCamera;
 
 
     private void Start()
@@ -35,6 +45,7 @@ public class ClientSceneManager : MonoBehaviour
         localRemoteController = playerTransform.gameObject.GetComponentInChildren<RemoteController>();
         raycastWeapons = playerTransform.gameObject.GetComponent<NetworkRaycastWeapons>();
         playerMovement = playerTransform.GetComponent<PlayerMovement>();
+        networkInstantiate = GetComponent<NetworkInstantiate>();
         localRemoteController.enabled = false;
         playerMovement.enabled = true;
 
@@ -45,6 +56,12 @@ public class ClientSceneManager : MonoBehaviour
 
     private void Update()
     {
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            networkInstantiate.instantiate(NetworkInstantiate.prefabNames.fireworks, playerTransform.position, Quaternion.identity, client.localClientID);
+        }
+
         if (client != null)
         {
             // Runs the main loop messages on the client object
@@ -100,6 +117,16 @@ public class ClientSceneManager : MonoBehaviour
         isActive = true;
         client.ConnectToServer(int.Parse(portInput.text), addressInput.text, nameInpupt.text);
         InvokeRepeating("UpdatePosition", 0, UpdateDelay);
+
+        networkInstantiate.setClient(client);
+    }
+
+    public void spawnLocalPlayer()
+    {
+        int nextSpawn = Random.Range(0, spawnPositions.Length);
+        playerTransform.position = spawnPositions[nextSpawn].transform.position;
+        lobbyCamera.SetActive(false);
+        playerTransform.gameObject.SetActive(true);
     }
 
     // Sends a position and rotation update to the server after updatedelay seconds
@@ -127,6 +154,6 @@ public class ClientSceneManager : MonoBehaviour
 
     public void takeDamage()
     {
-        playerMovement.changePosition(new Vector3(0, 5, 0));
+        playerMovement.changePosition(new Vector3(20, 100, 20));
     }
 }

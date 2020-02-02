@@ -17,6 +17,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float playerAirSpeed;
     [SerializeField] float playerGravity;
     [SerializeField] float jumpHeight;
+    [SerializeField] float fallMultiplier;
 
 
     public GameObject fireworks;
@@ -31,11 +32,14 @@ public class PlayerMovement : MonoBehaviour
         HorizontalInput = Input.GetAxis("Horizontal");
         VerticalInput = Input.GetAxis("Vertical");
 
+        if(controller.velocity.y < 0)
+        {
+            inputVector += Vector3.down * playerGravity * (fallMultiplier - 1) * Time.deltaTime;
+        }
+
         if (Input.GetButtonDown("Jump"))
             calculateJump();
 
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-            Instantiate(fireworks, transform.position, Quaternion.identity);
     }
 
     private void FixedUpdate()

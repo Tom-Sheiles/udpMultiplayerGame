@@ -16,7 +16,8 @@ public class Message
         ConnectionSuccessful,
         NewPlayerData,
         PositionUpdate,
-        RaycastMessage
+        RaycastMessage,
+        InstantiateObject
     }
 
     public Message(int clientID, string clientName)
@@ -46,12 +47,14 @@ public class Message
 public class ConnectMessage: Message
 {
     public int newLocalID;
+    public bool isInProgress;
 
-    public ConnectMessage(int clientID, int newID)
+    public ConnectMessage(int clientID, int newID, bool isInProgress)
     {
         this.clientID = clientID;
         this.message = (int)messageTypes.ConnectionSuccessful;
         this.newLocalID = newID;
+        this.isInProgress = isInProgress;
     }
 }
 
@@ -97,5 +100,23 @@ public class RaycastHitMessage: Message
         this.clientID = clientID;
         this.message = (int)messageTypes.RaycastMessage;
         this.targetID = targetID;
+    }
+}
+
+
+
+public class InstantiateObject: Message
+{
+    public NetworkInstantiate.prefabNames prefabName;
+    public Vector3 position;
+    public Quaternion rotation;
+
+    public InstantiateObject(int clientID, NetworkInstantiate.prefabNames prefabName, Vector3 position, Quaternion rotation)
+    {
+        this.clientID = clientID;
+        this.message = (int)messageTypes.InstantiateObject;
+        this.prefabName = prefabName;
+        this.position = position;
+        this.rotation = rotation;
     }
 }

@@ -13,6 +13,7 @@ public class Server
     private const int port = 3000;
     private int numberOfconnectedClients;
     private UdpClient udp;
+    private bool isInProgress;
 
     CommandDictionary commandDictionary;
     List<RemoteClients> remoteClients;
@@ -26,6 +27,7 @@ public class Server
         this.remoteClients = new List<RemoteClients>();
         this.numberOfconnectedClients = 0;
         this.mainThreadMessageQueue = new Queue<string>();
+        this.isInProgress = true;
     }
 
 
@@ -87,6 +89,9 @@ public class Server
             case (int)Message.messageTypes.RaycastMessage:
                 raycastHit(message);
                 break;
+            case (int)Message.messageTypes.InstantiateObject:
+                sendToAllClients(message);
+                break;
         }
     }
 
@@ -95,7 +100,7 @@ public class Server
     private void assignClientID(IPEndPoint client, string message)
     {
         RemoteClients newRemoteClient = new RemoteClients(numberOfconnectedClients);
-        ConnectMessage connectMessage = new ConnectMessage(-2, numberOfconnectedClients);
+        ConnectMessage connectMessage = new ConnectMessage(-2, numberOfconnectedClients, isInProgress);
         Message recievedMessage = JsonUtility.FromJson<Message>(message);
         newRemoteClient.setEndPoint(client);
 
@@ -124,6 +129,7 @@ public class Server
     }
 
     
+    // sends the updated position of a player to other clients
     private void updatePosition(string message)
     {
         PositionUpdateMessage positionUpdate = JsonUtility.FromJson<PositionUpdateMessage>(message);
@@ -138,6 +144,8 @@ public class Server
 
     }
 
+
+    // Sends a message to a client hit by a raycast from another client
     private void raycastHit(string message)
     {
         RaycastHitMessage raycastHitMessage = JsonUtility.FromJson<RaycastHitMessage>(message);
@@ -156,6 +164,16 @@ public class Server
     private void sendToClient(IPEndPoint client, string JsonString)
     {
         udp.Send(Encoding.ASCII.GetBytes(JsonString), JsonString.Length, client);
+    }
+
+
+    // Sends a UDP Message to all clients currently on the server.
+    private void sendToAllClients(string message)
+    {
+        foreach(RemoteClients remote in remoteClients)
+        {
+            udp.Send(Encoding.ASCII.GetBytes(message), message.Length, remote.clientEndPoint);
+        }
     }
 
 
