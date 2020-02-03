@@ -84,6 +84,10 @@ public class Client
                     {
                         sceneManager.spawnLocalPlayer();
                     }
+                    else
+                    {
+                        sceneManager.LobbyMenu();
+                    }
                 break;
 
                 case (int)Message.messageTypes.PositionUpdate:

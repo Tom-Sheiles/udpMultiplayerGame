@@ -17,6 +17,7 @@ public class ClientSceneManager : MonoBehaviour
     [SerializeField] private InputField portInput;
     [SerializeField] private InputField addressInput;
     [SerializeField] private InputField nameInpupt;
+    [SerializeField] private GameObject LobbyMenuObject;
 
     [Header("Update Rate Values")]
     [SerializeField] private float UpdateDelay = 0.5f;
@@ -57,7 +58,7 @@ public class ClientSceneManager : MonoBehaviour
     private void Update()
     {
 
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(KeyCode.Alpha1) && playerTransform.gameObject.activeInHierarchy)
         {
             networkInstantiate.instantiate(NetworkInstantiate.prefabNames.fireworks, playerTransform.position, Quaternion.identity, client.localClientID);
         }
@@ -104,9 +105,7 @@ public class ClientSceneManager : MonoBehaviour
                     remoteGameObjects[i].transform.localRotation = Quaternion.Lerp(remoteGameObjects[i].transform.rotation, client.remoteClients[i].clientRotation, clientRotateSmoothness);
                 }
             }
-
-        }         
-            
+        }             
     }
 
     // Called when connect to server button is pressed, uses the values of portInput and address input.
@@ -127,6 +126,11 @@ public class ClientSceneManager : MonoBehaviour
         playerTransform.position = spawnPositions[nextSpawn].transform.position;
         lobbyCamera.SetActive(false);
         playerTransform.gameObject.SetActive(true);
+    }
+
+    public void LobbyMenu()
+    {
+        if (!LobbyMenuObject.activeInHierarchy) { LobbyMenuObject.SetActive(true); }
     }
 
     // Sends a position and rotation update to the server after updatedelay seconds

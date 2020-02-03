@@ -29,6 +29,10 @@ public class FirstPersonCameraController : MonoBehaviour
         }
     }
 
+    [SerializeField] GameObject settings;
+    [SerializeField] GameObject QuitButton;
+    [SerializeField] GameObject Back;
+
     CameraState targetState = new CameraState();
     CameraState InterpolateCameraState = new CameraState();
     GameObject playerObject;
@@ -39,6 +43,7 @@ public class FirstPersonCameraController : MonoBehaviour
     public AnimationCurve mouseSensitivityCurve = new AnimationCurve(new Keyframe(0f, 0.5f, 0f, 5f), new Keyframe(1f, 2.5f, 0f, 0f));
     public float positionLerpTime = 0.2f;
     public float rotationLerpTime = 0.01f;
+    public float mouseSenseValue = 1.5f;
 
     void OnEnable()
     {
@@ -48,14 +53,13 @@ public class FirstPersonCameraController : MonoBehaviour
     }
 
 
-    void Update()
+    void LateUpdate()
     {
-        if (Input.GetKey(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            Application.Quit();
-            #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-            #endif
+            if(settings.activeInHierarchy) { settings.SetActive(false); QuitButton.SetActive(false); }
+            else { settings.SetActive(true); QuitButton.SetActive(true); }
+            Back.SetActive(false);
         }
 
         if (Input.GetMouseButton(1))
@@ -67,7 +71,8 @@ public class FirstPersonCameraController : MonoBehaviour
             RotY = Input.GetAxis("Mouse Y");
 
             var mouseMovement = new Vector2(RotX, RotY * (invertY ? 1 : -1));
-            var mouseSenseFactor = mouseSensitivityCurve.Evaluate(mouseMovement.magnitude);
+            //var mouseSenseFactor = mouseSensitivityCurve.Evaluate(mouseMovement.magnitude) * mouseSenseValue;
+            var mouseSenseFactor = mouseSenseValue;
 
             targetState.yaw += mouseMovement.x * mouseSenseFactor;
             targetState.pitch += mouseMovement.y * mouseSenseFactor;
