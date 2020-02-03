@@ -9,6 +9,7 @@ public class NetworkRaycastWeapons : MonoBehaviour
 
     [SerializeField] ClientSceneManager sceneManager;
     [SerializeField] float projectileMaxDistance;
+    public int damage = 10;
 
     void Start()
     {
@@ -34,7 +35,7 @@ public class NetworkRaycastWeapons : MonoBehaviour
             if(objectHit.transform.gameObject.GetComponentInChildren<RemoteController>() != null)
             {
                 RemoteController remoteController = objectHit.transform.gameObject.GetComponentInChildren<RemoteController>();
-                sceneManager.raycastCall(remoteController);
+                sceneManager.raycastCall(remoteController, damage);
                 
             }
         }

@@ -104,7 +104,7 @@ public class Client
                 break;
 
                 case (int)Message.messageTypes.RaycastMessage:
-                    sceneManager.takeDamage();
+                    sceneManager.takeDamage(nextMessage);
                 break;
 
                 case (int)Message.messageTypes.InstantiateObject:
@@ -124,9 +124,9 @@ public class Client
         sendToServer(positionUpdateMessage.constructMessage());   
     }
 
-    public void sendRaycastHit(RemoteController objectHit)
+    public void sendRaycastHit(RemoteController objectHit, int value)
     {
-        RaycastHitMessage raycastHitMessage = new RaycastHitMessage(localClientID, objectHit.id);
+        RaycastHitMessage raycastHitMessage = new RaycastHitMessage(localClientID, objectHit.id, value);
         sendToServer(raycastHitMessage.constructMessage());
         
     }

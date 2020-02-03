@@ -94,12 +94,21 @@ public class PositionUpdateMessage: Message
 public class RaycastHitMessage: Message
 {
     public int targetID;
+    public int raycastValue;
 
     public RaycastHitMessage(int clientID, int targetID)
     {
         this.clientID = clientID;
         this.message = (int)messageTypes.RaycastMessage;
         this.targetID = targetID;
+    }
+
+    public RaycastHitMessage(int clientID, int targetID, int raycastValue)
+    {
+        this.clientID = clientID;
+        this.message = (int)messageTypes.RaycastMessage;
+        this.targetID = targetID;
+        this.raycastValue = raycastValue;
     }
 }
 

@@ -26,6 +26,7 @@ public class ClientSceneManager : MonoBehaviour
 
     [HideInInspector] public Transform playerTransform;
     [HideInInspector] public Transform rotationTransform;
+    [HideInInspector] public PlayerHealth playerHealth;
 
     [Header("Remote Prefabs")]
     public GameObject playerPrefab;
@@ -44,9 +45,11 @@ public class ClientSceneManager : MonoBehaviour
         mainThreadQueue = new Queue<string>();
 
         localRemoteController = playerTransform.gameObject.GetComponentInChildren<RemoteController>();
-        raycastWeapons = playerTransform.gameObject.GetComponent<NetworkRaycastWeapons>();
-        playerMovement = playerTransform.GetComponent<PlayerMovement>();
-        networkInstantiate = GetComponent<NetworkInstantiate>();
+        raycastWeapons =        playerTransform.gameObject.GetComponent<NetworkRaycastWeapons>();
+        playerMovement =        playerTransform.GetComponent<PlayerMovement>();
+        playerHealth =          playerTransform.GetComponent<PlayerHealth>();
+        networkInstantiate =    GetComponent<NetworkInstantiate>();
+
         localRemoteController.enabled = false;
         playerMovement.enabled = true;
 
@@ -151,13 +154,14 @@ public class ClientSceneManager : MonoBehaviour
         mainThreadQueue.Enqueue(remote);
     }
 
-    public void raycastCall(RemoteController objectHit)
+    public void raycastCall(RemoteController objectHit, int value)
     {
-        client.sendRaycastHit(objectHit);
+        client.sendRaycastHit(objectHit, value);
     }
 
-    public void takeDamage()
+    public void takeDamage(string message)
     {
-        playerMovement.changePosition(new Vector3(20, 100, 20));
+        RaycastHitMessage raycastCommand = JsonUtility.FromJson<RaycastHitMessage>(message);
+        playerHealth.takeDamage(raycastCommand.raycastValue);
     }
 }
