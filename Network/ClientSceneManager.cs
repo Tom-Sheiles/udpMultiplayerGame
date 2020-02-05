@@ -24,8 +24,8 @@ public class ClientSceneManager : MonoBehaviour
     [SerializeField] private float clientSmoothness = 0.5f;
     [SerializeField] private float clientRotateSmoothness = 0.5f;
 
-    [HideInInspector] public Transform playerTransform;
-    [HideInInspector] public Transform rotationTransform;
+    public Transform playerTransform;
+    public Transform rotationTransform;
     [HideInInspector] public PlayerHealth playerHealth;
 
     [Header("Remote Prefabs")]
@@ -44,13 +44,13 @@ public class ClientSceneManager : MonoBehaviour
         portInput.text = "3000";
         mainThreadQueue = new Queue<string>();
 
-        localRemoteController = playerTransform.gameObject.GetComponentInChildren<RemoteController>();
+        //localRemoteController = playerTransform.gameObject.GetComponentInChildren<RemoteController>();
         raycastWeapons =        playerTransform.gameObject.GetComponent<NetworkRaycastWeapons>();
         playerMovement =        playerTransform.GetComponent<PlayerMovement>();
         playerHealth =          playerTransform.GetComponent<PlayerHealth>();
         networkInstantiate =    GetComponent<NetworkInstantiate>();
 
-        localRemoteController.enabled = false;
+        //localRemoteController.enabled = false;
         playerMovement.enabled = true;
 
         if(raycastWeapons != null)
@@ -79,7 +79,7 @@ public class ClientSceneManager : MonoBehaviour
             string nextMessage = mainThreadQueue.Dequeue();
             NewPlayerMessage newPlayerMessage = JsonUtility.FromJson<NewPlayerMessage>(nextMessage);
 
-            GameObject newRemote = Instantiate(playerPrefab, new Vector3(0, 2, 0), Quaternion.identity);
+            GameObject newRemote = Instantiate(playerPrefab, new Vector3(0, 2, 0), playerPrefab.transform.rotation);
 
             /*if (!Application.isEditor) // Instances the nametag of the remote player.
             {

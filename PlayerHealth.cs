@@ -16,11 +16,25 @@ public class PlayerHealth : MonoBehaviour
 
     void Update()
     {
-        
+        if(currentHealth <= 0)
+        {
+            currentHealth = 0;
+            respawnPlayer();
+        }
     }
 
     public void takeDamage(int damageAmount)
     {
-        Debug.Log(damageAmount);
+        currentHealth -= damageAmount;
+    }
+
+    public void gainHealth(int healAmount)
+    {
+        currentHealth += healAmount;
+    }
+
+    public void respawnPlayer()
+    {
+
     }
 }

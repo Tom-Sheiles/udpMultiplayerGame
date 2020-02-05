@@ -18,9 +18,10 @@ public class FirstPersonCameraController : MonoBehaviour
 
         public void LerpTowards(CameraState target, float positionLerpPct, float rotationLerpPct)
         {
+            target.pitch = Mathf.Clamp(target.pitch, -90f, 90f);
             yaw = Mathf.Lerp(yaw, target.yaw, rotationLerpPct);
             pitch = Mathf.Lerp(pitch, target.pitch, rotationLerpPct);
-            pitch = Mathf.Clamp(pitch, -90f, 90f);
+           
         }
 
         public void UpdateTransform(Transform t)
