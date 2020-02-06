@@ -16,7 +16,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float playerSpeed;
     [SerializeField] float playerAirSpeed;
     [SerializeField] float playerGravity;
-    [SerializeField] float jumpHeight;
+    [SerializeField] float jumpHeight = 6;
     [SerializeField] float fallMultiplier;
 
 

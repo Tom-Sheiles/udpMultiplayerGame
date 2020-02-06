@@ -6,7 +6,18 @@ public abstract class Weapon : ScriptableObject
 {
     [Header("Display Options")]
     public GameObject weaponModel;
+    public Animator animator;
+    [HideInInspector] public bool isReloading = false;
 
-    public abstract void initialize(Transform transform);
+    public bool isAutomatic = false;
+
+    public abstract GameObject initialize(Transform transform);
+    public abstract IEnumerator reloadCoroutine();
+    public abstract string getAmmo();
+
+    public void setAnimator(Animator animator)
+    {
+        this.animator = animator;
+    }
 }
 

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NetworkRaycastWeapons : MonoBehaviour
+public class NetworkWeaponManager : MonoBehaviour
 {
 
     private GameObject camera;
 
-    [SerializeField] ClientSceneManager sceneManager;
+    [SerializeField] ClientSceneManager sceneManager = null;
     [SerializeField] float projectileMaxDistance;
     public int damage = 10;
 
@@ -17,15 +17,28 @@ public class NetworkRaycastWeapons : MonoBehaviour
     }
 
 
-    void Update()
+    public void hitObjects(List<RaycastHit> hitObjects, int damagePerShot)
     {
-        if(Input.GetButtonDown("Fire1"))
+        foreach(RaycastHit ray in hitObjects)
         {
-            fireRay();
+            if(ray.transform.tag == "remotePlayer")
+            {
+                RemoteController remoteController = ray.transform.gameObject.GetComponentInChildren<RemoteController>();
+                sceneManager.raycastCall(remoteController, damagePerShot);
+            }
         }
     }
 
-    private void fireRay()
+    public void hitObjects(RaycastHit hitobject, int damage)
+    {
+        if(hitobject.transform.tag == "remotePlayer")
+        {
+            RemoteController remoteController = hitobject.transform.gameObject.GetComponentInChildren<RemoteController>();
+            sceneManager.raycastCall(remoteController, damage);
+        }
+    }
+
+    /*private void fireRay()
     {
         RaycastHit objectHit;
 
@@ -43,5 +56,5 @@ public class NetworkRaycastWeapons : MonoBehaviour
         {
             Debug.DrawRay(camera.transform.position, camera.transform.TransformDirection(Vector3.forward) * projectileMaxDistance, Color.red);
         }
-    }
+    }*/
 }

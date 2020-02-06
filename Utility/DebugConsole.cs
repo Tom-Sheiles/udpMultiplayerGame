@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class DebugConsole : MonoBehaviour
 {
-    [SerializeField] GameObject mainWindow;
+    /*[SerializeField] GameObject mainWindow;
     [SerializeField] Text text;
 
     //private static Queue<string> commands;
@@ -33,7 +33,7 @@ public class DebugConsole : MonoBehaviour
             }
         }
           
-    }
+    }*/
 
     public static void ConsoleLog(string command)
     {

@@ -13,16 +13,21 @@ public class MultiRaycast : RaycastWeapon
     public int damagePerShot;
     public float bulletSpread;
 
-   public void multiRaycast(Transform transform)
+    private bool hasShot = false;
+
+   public List<RaycastHit> multiRaycast(Transform transform)
     {
 
         RaycastHit hit;
-        int numHit = 0;
+        List<RaycastHit> hitObjects = new List<RaycastHit>();
 
-        if (!canRaycast())
+        if (!canRaycast() || isReloading)
         {
-            return;
+            return hitObjects;
         }
+
+        animator.ResetTrigger("shoot");
+        animator.SetTrigger("shoot");
 
         Debug.DrawRay(transform.position, transform.forward * shotDistance, Color.red, fireRate);
         for(int ray = 0; ray < numberOfRays; ray++)
@@ -38,12 +43,10 @@ public class MultiRaycast : RaycastWeapon
 
             if(Physics.Raycast(transform.position, rayDirection, out hit, shotDistance))
             {
-                if(hit.transform.gameObject.name == "Cube")
-                {
-                    numHit++;
-                }
+                hitObjects.Add(hit);
             }
         }
-        Debug.Log("Bullets hit " + numHit);
+        reduceAmmo();
+        return hitObjects;
     }
 }

@@ -7,19 +7,19 @@ public class SceneManager : MonoBehaviour
 {
 
     [Header("MainMenu")]
-    [SerializeField] GameObject mainMenu;
+    [SerializeField] GameObject mainMenu = null;
     [SerializeField] GameObject TitleText;
     [SerializeField] GameObject Tagline;
 
     [Header("MultiplayerMenu")]
-    [SerializeField] GameObject multiplayerObject;
+    [SerializeField] GameObject multiplayerObject = null;
 
     [Header("SettingsMenu")]
-    [SerializeField] GameObject SettingsObject;
+    [SerializeField] GameObject SettingsObject = null;
     [SerializeField] Toggle isFullScreen;
     Resolution[] resolutions;
     [SerializeField] Dropdown resolutionDropDown;
-    [SerializeField] Slider fovslider;
+    [SerializeField] Slider fovslider = null;
     [SerializeField] Text fovText;
     [SerializeField] InputField mouseSenseFactor;
     [SerializeField] Camera playerCamera;

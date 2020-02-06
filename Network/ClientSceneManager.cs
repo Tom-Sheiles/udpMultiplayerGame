@@ -6,17 +6,16 @@ using UnityEngine.UI;
 public class ClientSceneManager : MonoBehaviour
 {
     Client client;
-    private bool isActive = false;
     private Queue<string> mainThreadQueue;
     private RemoteController localRemoteController;
-    private NetworkRaycastWeapons raycastWeapons;
+    private NetworkWeaponManager raycastWeapons;
     private PlayerMovement playerMovement;
     private NetworkInstantiate networkInstantiate;
 
     [Header("Multiplayer UI")]
     [SerializeField] private InputField portInput;
     [SerializeField] private InputField addressInput;
-    [SerializeField] private InputField nameInpupt;
+    [SerializeField] private InputField nameInpupt = null;
     [SerializeField] private GameObject LobbyMenuObject;
 
     [Header("Update Rate Values")]
@@ -45,7 +44,7 @@ public class ClientSceneManager : MonoBehaviour
         mainThreadQueue = new Queue<string>();
 
         //localRemoteController = playerTransform.gameObject.GetComponentInChildren<RemoteController>();
-        raycastWeapons =        playerTransform.gameObject.GetComponent<NetworkRaycastWeapons>();
+        raycastWeapons =        playerTransform.gameObject.GetComponent<NetworkWeaponManager>();
         playerMovement =        playerTransform.GetComponent<PlayerMovement>();
         playerHealth =          playerTransform.GetComponent<PlayerHealth>();
         networkInstantiate =    GetComponent<NetworkInstantiate>();
@@ -63,7 +62,7 @@ public class ClientSceneManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha1) && playerTransform.gameObject.activeInHierarchy)
         {
-            networkInstantiate.instantiate(NetworkInstantiate.prefabNames.fireworks, playerTransform.position, Quaternion.identity, client.localClientID);
+            //networkInstantiate.instantiate(NetworkInstantiate.prefabNames.fireworks, playerTransform.position, Quaternion.identity, client.localClientID);
         }
 
         if (client != null)
@@ -116,7 +115,6 @@ public class ClientSceneManager : MonoBehaviour
     public void Connect()
     {
         this.client = new Client(this);
-        isActive = true;
         client.ConnectToServer(int.Parse(portInput.text), addressInput.text, nameInpupt.text);
         InvokeRepeating("UpdatePosition", 0, UpdateDelay);
 

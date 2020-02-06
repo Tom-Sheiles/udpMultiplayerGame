@@ -8,7 +8,7 @@ public class TasteIt : MonoBehaviour
 {
 
     [SerializeField] float shiftTime;
-    [SerializeField] TextMeshProUGUI tmpObj;
+    [SerializeField] TextMeshProUGUI tmpObj = null;
     [SerializeField] float colorChangeTime = 2.0f;
     [SerializeField] Color[] colors = new Color[6];
 

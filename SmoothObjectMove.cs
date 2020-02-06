@@ -5,7 +5,7 @@ using UnityEngine;
 public class SmoothObjectMove : MonoBehaviour
 {
 
-    [SerializeField] private Transform target;
+    /*[SerializeField] private Transform target;
     [SerializeField] private float time;
 
     Renderer objectRender;
@@ -23,5 +23,5 @@ public class SmoothObjectMove : MonoBehaviour
 
         
         
-    }
+    }*/
 }
