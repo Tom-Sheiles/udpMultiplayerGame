@@ -10,11 +10,14 @@ public class WeaponHandler : MonoBehaviour
     Animator[] viewModelAnimators = new Animator[2];
     [SerializeField] Transform raycastOrigin;
     [SerializeField] Transform viewModelPosition;
+    [SerializeField] Transform bulletOrigin;
 
     [SerializeField] GameEvent switchWeaponEvent;
     [SerializeField] GameEvent weaponSwitched;
+    [SerializeField] GameObject bulletVFX;
 
     NetworkWeaponManager networkWeaponManager;
+    Transform playerCamera;
 
     private int selectedWeapon = 0;
     public int numberOfWeapons = 1;
@@ -33,6 +36,11 @@ public class WeaponHandler : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        playerCamera = Camera.main.gameObject.transform;
+    }
+
     private void Update()
     {
 
@@ -48,6 +56,7 @@ public class WeaponHandler : MonoBehaviour
             if (Input.GetButton("Fire1"))
             {
                 handleWeapon();
+                
             }
         }
         
@@ -78,6 +87,10 @@ public class WeaponHandler : MonoBehaviour
         {
             viewModelAnimators[selectedWeapon].SetTrigger("Reload");
         }
+        else
+        {
+            viewModelAnimators[selectedWeapon].ResetTrigger("Reload");
+        }
     }
 
     private void dropSecondary()
@@ -97,7 +110,8 @@ public class WeaponHandler : MonoBehaviour
         switchWeaponEvent.Raise();
         weapons[1] = weapon;
         weaponViewModels[1] = weapons[1].initialize(viewModelPosition);
-        weapons[1].setAnimator(viewModelAnimators[0]);
+        viewModelAnimators[1] = weaponViewModels[1].GetComponent<Animator>();
+        weapons[1].setAnimator(viewModelAnimators[1]);
         selectedWeapon = 1;
         numberOfWeapons++;
         weaponSwitched.Raise();
@@ -115,7 +129,7 @@ public class WeaponHandler : MonoBehaviour
     {
         if (weapons[selectedWeapon].GetType() ==  typeof(RaycastWeapon))
         {
-            RaycastHit hitObject = ((RaycastWeapon)weapons[selectedWeapon]).instanceRay(raycastOrigin);
+            RaycastHit hitObject = ((RaycastWeapon)weapons[selectedWeapon]).instanceRay(raycastOrigin, bulletOrigin);
         }
 
         if(weapons[selectedWeapon].GetType() == typeof(MultiRaycast))
@@ -124,7 +138,7 @@ public class WeaponHandler : MonoBehaviour
             {
                 ((MultiRaycast)weapons[selectedWeapon]).hasShotWhenReload = true;
             }
-            List<RaycastHit> hitObjects = ((MultiRaycast)weapons[selectedWeapon]).multiRaycast(raycastOrigin);
+            List<RaycastHit> hitObjects = ((MultiRaycast)weapons[selectedWeapon]).multiRaycast(raycastOrigin, bulletOrigin);
             networkWeaponManager.hitObjects(hitObjects, ((MultiRaycast)weapons[selectedWeapon]).damagePerShot);
             
         }

@@ -10,7 +10,6 @@ public class RaycastWeapon : Weapon
     public bool infiniteAmmo = false;
     public bool hasMagazine = true;
     public int maxClipSize;
-    public int currentClipSize;
 
     public int maxReserve;
     public int currentReserve;
@@ -36,7 +35,8 @@ public class RaycastWeapon : Weapon
         {
             var viewModel = Instantiate(weaponModel, transform.position, transform.rotation);
             viewModel.transform.parent = transform.gameObject.transform;
-            viewModel.transform.localScale = new Vector3(1, 1, 1);
+
+            viewModel.transform.localScale = weaponModel.transform.localScale;
             return viewModel;
         }
         return new GameObject();
@@ -44,7 +44,7 @@ public class RaycastWeapon : Weapon
         
     }
 
-    public RaycastHit instanceRay(Transform position)
+    public RaycastHit instanceRay(Transform position, Transform bulletOrigin)
     {
         RaycastHit hit = new RaycastHit();
         if (!canRaycast())
@@ -52,7 +52,12 @@ public class RaycastWeapon : Weapon
             return hit;
         }
 
+        animator.ResetTrigger("shoot");
+        animator.SetTrigger("shoot");
+
         reduceAmmo();
+        animator.SetInteger("ammo", currentClipSize);
+        Instantiate(bulletVFX, bulletOrigin.position, bulletOrigin.rotation);
         if (Physics.Raycast(position.transform.position, position.forward, out hit, shotDistance))
         {
             //Debug.Log(hit.transform.gameObject.name);
@@ -119,14 +124,13 @@ public class RaycastWeapon : Weapon
             {
                 for(int clip = currentClipSize; clip < maxClipSize; clip++)
                 {
-                    yield return new WaitForSeconds(reloadTime);
-
                     if (hasShotWhenReload == true)
                     {
                         hasShotWhenReload = false;
                         isReloading = false;
                         yield break;
                     }
+                    yield return new WaitForSeconds(reloadTime);
                     currentClipSize++;
                 }
             }
@@ -135,6 +139,7 @@ public class RaycastWeapon : Weapon
 
         hasShotWhenReload = false;
         isReloading = false;
+        animator.SetInteger("ammo", currentClipSize);
     }
 
     public override string getAmmo()

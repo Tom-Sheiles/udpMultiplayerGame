@@ -15,7 +15,7 @@ public class MultiRaycast : RaycastWeapon
 
     private bool hasShot = false;
 
-   public List<RaycastHit> multiRaycast(Transform transform)
+   public List<RaycastHit> multiRaycast(Transform transform, Transform bulletOrigin)
     {
 
         RaycastHit hit;
@@ -40,8 +40,13 @@ public class MultiRaycast : RaycastWeapon
             rayDirection = transform.rotation * rayDirection;
 
             Debug.DrawRay(transform.position, rayDirection * shotDistance, Color.blue, fireRate);
+            var bullet = Instantiate(bulletVFX, bulletOrigin.position, bulletOrigin.rotation);
+            var rBulletx = Random.Range(-bulletSpread, bulletSpread);
+            var rBulletY = Random.Range(-bulletSpread, bulletSpread);
+            var rBulletZ = Random.Range(-bulletSpread, bulletSpread);
+            bullet.transform.Rotate(rBulletx, rBulletY, rBulletZ);
 
-            if(Physics.Raycast(transform.position, rayDirection, out hit, shotDistance))
+            if (Physics.Raycast(transform.position, rayDirection, out hit, shotDistance))
             {
                 hitObjects.Add(hit);
             }
