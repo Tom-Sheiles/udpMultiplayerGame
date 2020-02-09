@@ -142,6 +142,11 @@ public class ClientSceneManager : MonoBehaviour
         return client.localClientID;
     }
 
+    public Vector3 getnextspawn()
+    {
+        var nextSpawn = Random.Range(0, spawnPositions.Length);
+        return spawnPositions[nextSpawn].transform.position;
+    }
 
     public void spawnLocalPlayer()
     {

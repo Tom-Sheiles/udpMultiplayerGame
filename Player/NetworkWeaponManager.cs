@@ -40,8 +40,6 @@ public class NetworkWeaponManager : MonoBehaviour
 
         try
         {
-
-
             var damageNumberPos = raypos.transform.position;
             damageNumberPos.x = Random.Range(raypos.transform.position.x - damageNumberOffset, raypos.transform.position.x + damageNumberOffset);
             damageNumberPos.y = Random.Range(raypos.transform.position.y, raypos.transform.position.y + damageNumberOffset);
@@ -58,10 +56,19 @@ public class NetworkWeaponManager : MonoBehaviour
 
     public void hitObjects(RaycastHit hitobject, int damage)
     {
-        if(hitobject.transform.tag == "remotePlayer")
+
+        try
         {
-            RemoteController remoteController = hitobject.transform.gameObject.GetComponentInChildren<RemoteController>();
-            sceneManager.raycastCall(remoteController, damage);
+            if (hitobject.transform.tag == "remotePlayer")
+            {
+                RemoteController remoteController = hitobject.transform.gameObject.GetComponentInChildren<RemoteController>();
+                sceneManager.raycastCall(remoteController, damage);
+            }
         }
+        catch
+        {
+
+        }
+       
     }
 }

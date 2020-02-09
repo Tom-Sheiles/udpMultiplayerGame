@@ -18,6 +18,7 @@ public class HUDdisplay : MonoBehaviour
     [SerializeField] GameObject sprintValue = null;
     [SerializeField] Slider healthBar = null;
     [SerializeField] TextMeshProUGUI healthtext = null;
+    [SerializeField] GameObject[] hudElements;
 
     private void Start()
     {
@@ -48,5 +49,21 @@ public class HUDdisplay : MonoBehaviour
     public void changeWeapon()
     {
         weaponData = weaponHandler.getSelectedWeapon();
+    }
+
+    public void playerDied()
+    {
+        foreach(GameObject element in hudElements)
+        {
+            element.SetActive(false);
+        }
+    }
+
+    public void playerRespawn()
+    {
+        foreach(GameObject element in hudElements)
+        {
+            element.SetActive(true);
+        }
     }
 }

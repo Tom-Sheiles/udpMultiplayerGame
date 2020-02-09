@@ -15,7 +15,7 @@ public class RaycastWeapon : Weapon
     public int currentReserve;
 
     [Header("Weapon Stats")]
-    [SerializeField] private float Damage;
+    [SerializeField] public int Damage;
     public float shotDistance;
     public float fireRate;
     protected float shotTimer;

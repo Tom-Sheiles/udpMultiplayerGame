@@ -139,6 +139,7 @@ public class WeaponHandler : MonoBehaviour
         if (weapons[selectedWeapon].GetType() ==  typeof(RaycastWeapon))
         {
             RaycastHit hitObject = ((RaycastWeapon)weapons[selectedWeapon]).instanceRay(raycastOrigin, bulletOrigin, networkInstantiate, clientSceneManager.getID());
+            networkWeaponManager.hitObjects(hitObject, ((RaycastWeapon)weapons[selectedWeapon]).Damage);
         }
 
         if(weapons[selectedWeapon].GetType() == typeof(MultiRaycast))
