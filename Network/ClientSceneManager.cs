@@ -11,6 +11,7 @@ public class ClientSceneManager : MonoBehaviour
     private NetworkWeaponManager raycastWeapons;
     private PlayerMovement playerMovement;
     private NetworkInstantiate networkInstantiate;
+    private RagdollSpawner ragdollSpawner;
 
     [Header("Multiplayer UI")]
     [SerializeField] private InputField portInput;
@@ -48,6 +49,7 @@ public class ClientSceneManager : MonoBehaviour
         playerMovement =        playerTransform.GetComponent<PlayerMovement>();
         playerHealth =          playerTransform.GetComponent<PlayerHealth>();
         networkInstantiate =    GetComponent<NetworkInstantiate>();
+        ragdollSpawner = GetComponent<RagdollSpawner>();
 
         //localRemoteController.enabled = false;
         playerMovement.enabled = true;
@@ -63,6 +65,7 @@ public class ClientSceneManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha1) && playerTransform.gameObject.activeInHierarchy)
         {
             //networkInstantiate.instantiate(NetworkInstantiate.prefabNames.fireworks, playerTransform.position, Quaternion.identity, client.localClientID);
+            //networkInstantiate.instantiate(NetworkInstantiate.prefabNames.ragdoll, playerTransform.position, playerTransform.rotation, client.localClientID);
         }
 
         if (client != null)
@@ -74,23 +77,36 @@ public class ClientSceneManager : MonoBehaviour
         // Dequeues and parses main thread messages for the game client.
         if (mainThreadQueue.Count > 0)
         {
-            // ********* TODO: Change this to a switch when more messages are added
             string nextMessage = mainThreadQueue.Dequeue();
-            NewPlayerMessage newPlayerMessage = JsonUtility.FromJson<NewPlayerMessage>(nextMessage);
+            Message message = JsonUtility.FromJson<Message>(nextMessage);
 
-            GameObject newRemote = Instantiate(playerPrefab, new Vector3(0, 2, 0), playerPrefab.transform.rotation);
-
-            /*if (!Application.isEditor) // Instances the nametag of the remote player.
+            switch (message.message)
             {
-                GameObject nameTag = Instantiate(nameTagPrefab, newRemote.transform.position, Quaternion.identity);
-                nameTag.GetComponent<StrictFollowObject>().target = newRemote.transform;
-                nameTag.GetComponentInChildren<Text>().text = newPlayerMessage.clientName;
-            }*/
 
-            RemoteController controller = newRemote.GetComponentInChildren<RemoteController>();
-            controller.initRemote(newPlayerMessage.newPlayerID);
+                case (int)Message.messageTypes.NewPlayerData:
 
-            remoteGameObjects.Add(newRemote);
+                NewPlayerMessage newPlayerMessage = JsonUtility.FromJson<NewPlayerMessage>(nextMessage);
+
+                GameObject newRemote = Instantiate(playerPrefab, new Vector3(0, 2, 0), playerPrefab.transform.rotation);
+
+                RemoteController controller = newRemote.GetComponentInChildren<RemoteController>();
+                controller.initRemote(newPlayerMessage.newPlayerID);
+
+                remoteGameObjects.Add(newRemote);
+
+                    break;
+
+                case (int)Message.messageTypes.SwitchWeapon:
+                SwitchWeapon switchWeapon = JsonUtility.FromJson<SwitchWeapon>(nextMessage);
+                if (switchWeapon.clientID == client.localClientID)
+                    return;
+
+                foreach (GameObject remote in remoteGameObjects)
+                {
+                    remote.GetComponentInChildren<RemoteController>().changeWeapon(switchWeapon.weaponID);
+                }
+                    break;
+            }
         }
 
 
@@ -121,6 +137,12 @@ public class ClientSceneManager : MonoBehaviour
         networkInstantiate.setClient(client);
     }
 
+    public int getID()
+    {
+        return client.localClientID;
+    }
+
+
     public void spawnLocalPlayer()
     {
         int nextSpawn = Random.Range(0, spawnPositions.Length);
@@ -128,6 +150,7 @@ public class ClientSceneManager : MonoBehaviour
         lobbyCamera.SetActive(false);
         playerTransform.gameObject.SetActive(true);
     }
+
 
     public void LobbyMenu()
     {
@@ -140,21 +163,40 @@ public class ClientSceneManager : MonoBehaviour
         client.sendPositionUpdate(playerTransform.position, rotationTransform.rotation);
     }
 
-    public void updateRemote()
-    {
-        //Vector3 vector3 = Vector3.zero;
-        //newRemote.transform.position = client.remoteClients[0].clientTransform;
-        //newRemote.transform.position = Vector3.SmoothDamp(newRemote.transform.position, client.remoteClients[0].clientTransform, ref vector3, clientSmoothness) ;
-    }
 
     public void instantiateRemote(string remote)
     {
         mainThreadQueue.Enqueue(remote);
     }
 
+    public void instantiateRagdoll(InstantiateObject instantiateObject)
+    {
+        ragdollSpawner.instantiateRagdoll(instantiateObject);
+    }
+
+
     public void raycastCall(RemoteController objectHit, int value)
     {
         client.sendRaycastHit(objectHit, value);
+    }
+
+
+    public void SendWeaponSwitch(int id)
+    {
+        SwitchWeapon switchWeapon = new SwitchWeapon(client.localClientID, id);
+        client.sendToServer(switchWeapon.constructMessage());
+    }
+
+    public void sendRagdollSpawn(Vector3 deathPoint)
+    {
+        networkInstantiate.instantiate(NetworkInstantiate.prefabNames.ragdoll, deathPoint, playerTransform.rotation, client.localClientID);
+    }
+
+
+    public void RemoteWeaponSwitch(string message)
+    {
+
+        mainThreadQueue.Enqueue(message);
     }
 
     public void takeDamage(string message)

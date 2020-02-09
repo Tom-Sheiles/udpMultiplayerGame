@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class WeaponHandler : MonoBehaviour
 {
+    [SerializeField] ClientSceneManager clientSceneManager;
     [SerializeField] Weapon[] weapons = new Weapon[2];
     GameObject[] weaponViewModels = new GameObject[2];
     Animator[] viewModelAnimators = new Animator[2];
@@ -22,15 +23,19 @@ public class WeaponHandler : MonoBehaviour
     private int selectedWeapon = 0;
     public int numberOfWeapons = 1;
 
+    private NetworkInstantiate networkInstantiate;
+
     private void Start()
     {
 
         networkWeaponManager = gameObject.GetComponent<NetworkWeaponManager>();
 
+        networkInstantiate = clientSceneManager.GetComponentInChildren<NetworkInstantiate>();
+
         foreach(Weapon weapon in weapons)
         {
             if(weapon != null)
-            weaponViewModels[0] = weapon.initialize(viewModelPosition);
+            weaponViewModels[0] = weapon.initialize(viewModelPosition, clientSceneManager.getID());
             viewModelAnimators[0] = weaponViewModels[0].GetComponent<Animator>();
             weapons[0].setAnimator(viewModelAnimators[0]); 
         }
@@ -109,12 +114,14 @@ public class WeaponHandler : MonoBehaviour
         Debug.Log("picked up a " + weapon);
         switchWeaponEvent.Raise();
         weapons[1] = weapon;
-        weaponViewModels[1] = weapons[1].initialize(viewModelPosition);
+        weaponViewModels[1] = weapons[1].initialize(viewModelPosition, clientSceneManager.getID());
         viewModelAnimators[1] = weaponViewModels[1].GetComponent<Animator>();
         weapons[1].setAnimator(viewModelAnimators[1]);
         selectedWeapon = 1;
         numberOfWeapons++;
         weaponSwitched.Raise();
+
+        clientSceneManager.SendWeaponSwitch(weapon.id);
     }
 
     private void switchTo(int weaponSlot)
@@ -123,13 +130,15 @@ public class WeaponHandler : MonoBehaviour
         selectedWeapon = weaponSlot;
         weaponViewModels[selectedWeapon].SetActive(true);
         weaponSwitched.Raise();
+
+        clientSceneManager.SendWeaponSwitch(weapons[selectedWeapon].id);
     }
 
     private void handleWeapon()
     {
         if (weapons[selectedWeapon].GetType() ==  typeof(RaycastWeapon))
         {
-            RaycastHit hitObject = ((RaycastWeapon)weapons[selectedWeapon]).instanceRay(raycastOrigin, bulletOrigin);
+            RaycastHit hitObject = ((RaycastWeapon)weapons[selectedWeapon]).instanceRay(raycastOrigin, bulletOrigin, networkInstantiate, clientSceneManager.getID());
         }
 
         if(weapons[selectedWeapon].GetType() == typeof(MultiRaycast))
@@ -138,7 +147,7 @@ public class WeaponHandler : MonoBehaviour
             {
                 ((MultiRaycast)weapons[selectedWeapon]).hasShotWhenReload = true;
             }
-            List<RaycastHit> hitObjects = ((MultiRaycast)weapons[selectedWeapon]).multiRaycast(raycastOrigin, bulletOrigin);
+            List<RaycastHit> hitObjects = ((MultiRaycast)weapons[selectedWeapon]).multiRaycast(raycastOrigin, bulletOrigin, networkInstantiate, clientSceneManager.getID());
             networkWeaponManager.hitObjects(hitObjects, ((MultiRaycast)weapons[selectedWeapon]).damagePerShot);
             
         }

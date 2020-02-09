@@ -6,11 +6,16 @@ public class PlayerHealth : MonoBehaviour
 {
 
     public int maxHealth;
-    private int currentHealth;
+    public int currentHealth;
+
+    [SerializeField] ClientSceneManager sceneManager = null;
+    [SerializeField] float RagdollSpawnTime = 0.3f;
+    PlayerMovement playerMovement;
     
     void Start()
     {
         currentHealth = maxHealth;
+        playerMovement = GetComponent<PlayerMovement>();
     }
 
 
@@ -36,5 +41,18 @@ public class PlayerHealth : MonoBehaviour
     public void respawnPlayer()
     {
 
+        var deathPoint = transform.position;
+        playerMovement.changePosition(new Vector3(725.032f, 70, 244.5742f));
+
+        StartCoroutine("ragdollCoroutine", deathPoint); 
+        
+        currentHealth = maxHealth;
+        
+    }
+
+    private IEnumerator ragdollCoroutine(Vector3 deathpoint)
+    {
+        yield return new WaitForSeconds(RagdollSpawnTime);
+        sceneManager.sendRagdollSpawn(deathpoint);
     }
 }

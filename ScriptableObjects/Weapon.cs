@@ -5,6 +5,7 @@ using UnityEngine;
 public abstract class Weapon : ScriptableObject
 {
     [Header("Display Options")]
+    public int id;
     public GameObject weaponModel;
     public Animator animator;
     public GameObject bulletVFX;
@@ -13,7 +14,7 @@ public abstract class Weapon : ScriptableObject
 
     public bool isAutomatic = false;
 
-    public abstract GameObject initialize(Transform transform);
+    public abstract GameObject initialize(Transform transform, int id);
     public abstract IEnumerator reloadCoroutine();
     public abstract string getAmmo();
 

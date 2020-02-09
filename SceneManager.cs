@@ -22,7 +22,7 @@ public class SceneManager : MonoBehaviour
     [SerializeField] Slider fovslider = null;
     [SerializeField] Text fovText;
     [SerializeField] InputField mouseSenseFactor;
-    [SerializeField] Camera playerCamera;
+    [SerializeField] Camera playerCamera = null;
     
     public void QuitGame()
     {

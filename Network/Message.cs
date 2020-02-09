@@ -17,7 +17,8 @@ public class Message
         NewPlayerData,
         PositionUpdate,
         RaycastMessage,
-        InstantiateObject
+        InstantiateObject,
+        SwitchWeapon
     }
 
     public Message(int clientID, string clientName)
@@ -127,5 +128,18 @@ public class InstantiateObject: Message
         this.prefabName = prefabName;
         this.position = position;
         this.rotation = rotation;
+    }
+}
+
+
+public class SwitchWeapon: Message
+{
+    public int weaponID;
+
+    public SwitchWeapon(int clientID, int weaponID)
+    {
+        this.clientID = clientID;
+        this.message = (int)messageTypes.SwitchWeapon;
+        this.weaponID = weaponID;
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 public class WeaponPickup : MonoBehaviour
 {
     [SerializeField] Weapon weapon;
+
     private void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.name == "PlayerObject")

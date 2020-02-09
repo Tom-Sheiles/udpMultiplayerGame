@@ -92,6 +92,9 @@ public class Server
             case (int)Message.messageTypes.InstantiateObject:
                 sendToAllClients(message);
                 break;
+            case (int)Message.messageTypes.SwitchWeapon:
+                sendToAllClients(message);
+                break;
         }
     }
 

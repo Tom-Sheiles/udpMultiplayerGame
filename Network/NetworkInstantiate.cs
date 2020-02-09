@@ -9,7 +9,9 @@ public class NetworkInstantiate : MonoBehaviour
     private Client client;
     public enum prefabNames
     {
-        fireworks
+        fireworks,
+        bullet,
+        ragdoll
     }
 
     public void setClient(Client client)

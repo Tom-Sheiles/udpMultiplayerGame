@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class NetworkWeaponManager : MonoBehaviour
 {
@@ -9,7 +10,8 @@ public class NetworkWeaponManager : MonoBehaviour
 
     [SerializeField] ClientSceneManager sceneManager = null;
     [SerializeField] float projectileMaxDistance;
-    public int damage = 10;
+    [SerializeField] GameObject damageNumberPrefab;
+    public float damageNumberOffset = 0.45f;
 
     void Start()
     {
@@ -19,13 +21,38 @@ public class NetworkWeaponManager : MonoBehaviour
 
     public void hitObjects(List<RaycastHit> hitObjects, int damagePerShot)
     {
+        var totalDamage = 0;
+        var raypos = new RaycastHit();
+
         foreach(RaycastHit ray in hitObjects)
         {
             if(ray.transform.tag == "remotePlayer")
             {
                 RemoteController remoteController = ray.transform.gameObject.GetComponentInChildren<RemoteController>();
+
+                totalDamage += damagePerShot;
+
                 sceneManager.raycastCall(remoteController, damagePerShot);
+
+                raypos = ray;
             }
+        }
+
+        try
+        {
+
+
+            var damageNumberPos = raypos.transform.position;
+            damageNumberPos.x = Random.Range(raypos.transform.position.x - damageNumberOffset, raypos.transform.position.x + damageNumberOffset);
+            damageNumberPos.y = Random.Range(raypos.transform.position.y, raypos.transform.position.y + damageNumberOffset);
+            damageNumberPos.z = Random.Range(raypos.transform.position.z - damageNumberOffset, raypos.transform.position.z + damageNumberOffset);
+
+            var damageNumber = Instantiate(damageNumberPrefab, damageNumberPos, raypos.transform.rotation);
+            damageNumber.GetComponentInChildren<Text>().text = "-" + totalDamage.ToString();
+        }
+        catch
+        {
+
         }
     }
 
@@ -37,24 +64,4 @@ public class NetworkWeaponManager : MonoBehaviour
             sceneManager.raycastCall(remoteController, damage);
         }
     }
-
-    /*private void fireRay()
-    {
-        RaycastHit objectHit;
-
-        if(Physics.Raycast(camera.transform.position, camera.transform.TransformDirection(Vector3.forward), out objectHit, projectileMaxDistance))
-        {
-            Debug.DrawRay(camera.transform.position, camera.transform.TransformDirection(Vector3.forward) * projectileMaxDistance, Color.red);
-            if(objectHit.transform.gameObject.GetComponentInChildren<RemoteController>() != null)
-            {
-                RemoteController remoteController = objectHit.transform.gameObject.GetComponentInChildren<RemoteController>();
-                sceneManager.raycastCall(remoteController, damage);
-                
-            }
-        }
-        else
-        {
-            Debug.DrawRay(camera.transform.position, camera.transform.TransformDirection(Vector3.forward) * projectileMaxDistance, Color.red);
-        }
-    }*/
 }

@@ -8,6 +8,7 @@ public class RemoteController : MonoBehaviour
     private Renderer objectRender;
 
     [SerializeField] Material[] mats;
+    [SerializeField] GameObject[] guns;
 
     public void initRemote(int newID)
     {
@@ -35,6 +36,16 @@ public class RemoteController : MonoBehaviour
                 objectRender.material = mats[3];
                 break;
         }
+    }
+
+    public void changeWeapon(int weaponID)
+    {
+        foreach(GameObject gun in guns)
+        {
+            gun.SetActive(false);
+        }
+
+        guns[weaponID].SetActive(true);
     }
 
 }

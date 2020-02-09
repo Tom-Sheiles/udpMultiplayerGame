@@ -10,7 +10,7 @@ public class ProjectileWeapon : Weapon
         throw new System.NotImplementedException();
     }
 
-    public override GameObject initialize(Transform transform)
+    public override GameObject initialize(Transform transform, int id)
     {
         throw new System.NotImplementedException();
     }

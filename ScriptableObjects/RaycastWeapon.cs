@@ -25,7 +25,7 @@ public class RaycastWeapon : Weapon
     [HideInInspector] public bool hasShotWhenReload = false;
 
 
-    public override GameObject initialize(Transform transform)
+    public override GameObject initialize(Transform transform, int id)
     {
         shotTimer = 0f;
         currentClipSize = maxClipSize;
@@ -37,6 +37,7 @@ public class RaycastWeapon : Weapon
             viewModel.transform.parent = transform.gameObject.transform;
 
             viewModel.transform.localScale = weaponModel.transform.localScale;
+            viewModel.GetComponentInChildren<viewModelColor>().changeColor(id);
             return viewModel;
         }
         return new GameObject();
@@ -44,7 +45,7 @@ public class RaycastWeapon : Weapon
         
     }
 
-    public RaycastHit instanceRay(Transform position, Transform bulletOrigin)
+    public RaycastHit instanceRay(Transform position, Transform bulletOrigin, NetworkInstantiate networkInstantiate, int id)
     {
         RaycastHit hit = new RaycastHit();
         if (!canRaycast())
@@ -58,6 +59,7 @@ public class RaycastWeapon : Weapon
         reduceAmmo();
         animator.SetInteger("ammo", currentClipSize);
         Instantiate(bulletVFX, bulletOrigin.position, bulletOrigin.rotation);
+        networkInstantiate.instantiate(NetworkInstantiate.prefabNames.bullet, bulletOrigin.position, bulletOrigin.rotation, id);
         if (Physics.Raycast(position.transform.position, position.forward, out hit, shotDistance))
         {
             //Debug.Log(hit.transform.gameObject.name);

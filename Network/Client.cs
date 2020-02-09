@@ -108,7 +108,16 @@ public class Client
                 break;
 
                 case (int)Message.messageTypes.InstantiateObject:
+
+                    InstantiateObject instantiateObject = JsonUtility.FromJson<InstantiateObject>(nextMessage);
+                    if(instantiateObject.prefabName == NetworkInstantiate.prefabNames.ragdoll)
+                    {
+                        sceneManager.instantiateRagdoll(instantiateObject);
+                    }
+                    else
+                    {
                     networkInst.recieveInstance(nextMessage);
+                    }
                 break;
 
             }
@@ -173,6 +182,9 @@ public class Client
                 break;
             case (int)Message.messageTypes.InstantiateObject:
                 instanceMainThread(message);
+                break;
+            case (int)Message.messageTypes.SwitchWeapon:
+                sceneManager.RemoteWeaponSwitch(message);
                 break;
         }
     }
